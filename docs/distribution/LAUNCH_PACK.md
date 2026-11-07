@@ -28,3 +28,4 @@ At **Dangling Dice Studios™** (`https://dangling-dice-studios.com`), we solved
 Because every engine has **zero external HTTP calls and zero Node-only dependencies**, the exact same TypeScript functions run:
 1. **Free inside the browser** on our interactive sandboxes (`/tools/json-to-zod`, `/tools/polygon-acreage-calculator`, `/tools/pii-redactor`, `/tools/loan-amortization-calculator`) at $0 server cost.
 2. **Inside our Fastify API Gateway** for developers who want 1-line cURL/TypeScript/Python automation.
+
