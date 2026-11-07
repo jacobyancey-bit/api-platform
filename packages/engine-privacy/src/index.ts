@@ -301,3 +301,4 @@ export function maskJsonPayload(params: MaskJsonRequest): MaskJsonResult {
         maskedPaths,
     };
 }
+

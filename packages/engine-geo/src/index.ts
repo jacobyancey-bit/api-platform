@@ -262,3 +262,4 @@ export function isPointInPolygon(params: PointInPolygonRequest): PointInPolygonR
         distanceToCentroidMeters: dist.distanceMeters,
     };
 }
+

@@ -64,3 +64,4 @@ describe("maskJsonPayload", () => {
         expect(masked.auth.role).toBe("admin");
     });
 });
+

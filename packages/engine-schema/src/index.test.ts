@@ -55,3 +55,4 @@ describe("sqlToTypeScript", () => {
         expect(result.zod).toContain("z.boolean()");
     });
 });
+

@@ -244,3 +244,4 @@ class PlatformStore {
 }
 
 export const platformStore = new PlatformStore();
+

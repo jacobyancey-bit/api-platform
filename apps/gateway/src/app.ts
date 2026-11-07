@@ -442,3 +442,4 @@ export function buildGatewayApp(): FastifyInstance {
 
     return app;
 }
+

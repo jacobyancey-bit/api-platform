@@ -75,3 +75,4 @@ model ConsultingInquiry {
   status         String   @default("NEW")
   createdAt      DateTime @default(now())
 }
+

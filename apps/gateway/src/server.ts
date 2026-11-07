@@ -16,3 +16,4 @@ app.listen({ port: PORT, host: HOST })
         console.error("Failed to start API Gateway:", err);
         process.exit(1);
     });
+

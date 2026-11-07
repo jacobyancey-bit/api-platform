@@ -7,6 +7,8 @@ node_modules/
 dist/
 build/
 out/
+.next/
+next-env.d.ts
 
 # Environment & Secrets
 .env

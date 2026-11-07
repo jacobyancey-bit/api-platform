@@ -31,3 +31,4 @@ services:
 
 volumes:
   dds_api_pgdata:
+
