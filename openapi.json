@@ -1,0 +1,258 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Dangling Dice Studios™ — Stateless Compute API Platform",
+    "version": "1.0.0",
+    "description": "Ultra-low-latency (<15ms) stateless REST APIs for JSON/Zod/SQL Schema Inference, GIS Parcel Acreage & Coordinate Math, Luhn-Verified PII Redaction, and Financial Loan Amortization.",
+    "contact": {
+      "name": "Dangling Dice Studios™ Systems Architecture",
+      "url": "https://dangling-dice-studios.com",
+      "email": "jacob.yancey@danglingdicestudios.com"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://api.dangling-dice-studios.com",
+      "description": "Dangling Dice Studios Production Gateway"
+    },
+    {
+      "url": "http://localhost:4100",
+      "description": "Local Development Gateway"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "API_KEY",
+        "description": "Pass your Dangling Dice API Key in Authorization: Bearer dds_live_..."
+      }
+    }
+  },
+  "security": [
+    {
+      "BearerAuth": []
+    }
+  ],
+  "paths": {
+    "/v1/schema/infer": {
+      "post": {
+        "operationId": "inferSchemaFromJson",
+        "tags": ["Schema Engine"],
+        "summary": "Infer Zod, TypeScript, JSON Schema, and Postgres DDL from JSON",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["jsonInput"],
+                "properties": {
+                  "jsonInput": { "description": "Raw JSON string or JSON object" },
+                  "rootName": { "type": "string", "default": "RootRecord" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Generated TypeScript, Zod, JSON Schema, and SQL DDL" }
+        }
+      }
+    },
+    "/v1/schema/sql-to-ts": {
+      "post": {
+        "operationId": "convertSqlToTypeScript",
+        "tags": ["Schema Engine"],
+        "summary": "Convert SQL CREATE TABLE DDL into TypeScript interfaces and Zod schemas",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["sqlDdl"],
+                "properties": {
+                  "sqlDdl": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Generated TypeScript & Zod definitions" }
+        }
+      }
+    },
+    "/v1/geo/parcel-metrics": {
+      "post": {
+        "operationId": "calculateParcelMetrics",
+        "tags": ["Geo Engine"],
+        "summary": "Calculate polygon acreage, square feet, hectares, perimeter, and centroid",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["coordinates"],
+                "properties": {
+                  "coordinates": {
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "items": { "type": "number" },
+                      "minItems": 2,
+                      "maxItems": 2
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Computed parcel area and boundary metrics" }
+        }
+      }
+    },
+    "/v1/geo/distance": {
+      "post": {
+        "operationId": "calculateDistanceAndBearing",
+        "tags": ["Geo Engine"],
+        "summary": "Compute Haversine distance, compass bearing, and midpoint between two coordinates",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["from", "to"],
+                "properties": {
+                  "from": {
+                    "type": "object",
+                    "required": ["lat", "lng"],
+                    "properties": { "lat": { "type": "number" }, "lng": { "type": "number" } }
+                  },
+                  "to": {
+                    "type": "object",
+                    "required": ["lat", "lng"],
+                    "properties": { "lat": { "type": "number" }, "lng": { "type": "number" } }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Distance in meters, km, miles, feet + bearing and midpoint" }
+        }
+      }
+    },
+    "/v1/privacy/redact": {
+      "post": {
+        "operationId": "redactPiiText",
+        "tags": ["Privacy Engine"],
+        "summary": "Sanitize PII (Emails, SSNs, Luhn-checked Credit Cards, Phones, IPs, API Keys)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["text"],
+                "properties": {
+                  "text": { "type": "string" },
+                  "mode": { "type": "string", "enum": ["placeholder", "mask", "hash"], "default": "placeholder" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Sanitized text and category breakdown" }
+        }
+      }
+    },
+    "/v1/privacy/mask-json": {
+      "post": {
+        "operationId": "maskSensitiveJsonPayload",
+        "tags": ["Privacy Engine"],
+        "summary": "Recursively mask passwords, tokens, SSNs, and secrets in nested JSON objects",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["payload"],
+                "properties": {
+                  "payload": { "type": "object" },
+                  "sensitiveKeys": { "type": "array", "items": { "type": "string" } }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Masked JSON object and list of redacted key paths" }
+        }
+      }
+    },
+    "/v1/finance/amortization": {
+      "post": {
+        "operationId": "calculateLoanAmortization",
+        "tags": ["Finance Engine"],
+        "summary": "Generate penny-accurate monthly loan amortization schedule",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["principal", "annualRatePercent", "termMonths"],
+                "properties": {
+                  "principal": { "type": "number" },
+                  "annualRatePercent": { "type": "number" },
+                  "termMonths": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Monthly payment, total interest, and full schedule" }
+        }
+      }
+    },
+    "/v1/finance/extra-payments": {
+      "post": {
+        "operationId": "simulateExtraLoanPayments",
+        "tags": ["Finance Engine"],
+        "summary": "Compare baseline loan against accelerated payoff with extra payments",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["principal", "annualRatePercent", "termMonths"],
+                "properties": {
+                  "principal": { "type": "number" },
+                  "annualRatePercent": { "type": "number" },
+                  "termMonths": { "type": "integer" },
+                  "extraMonthlyPayment": { "type": "number", "default": 0 },
+                  "oneTimeExtraPayment": { "type": "number", "default": 0 }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Interest saved, months shaved, and accelerated schedule" }
+        }
+      }
+    }
+  }
+}
