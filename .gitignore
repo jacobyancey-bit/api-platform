@@ -1,4 +1,3 @@
-cat << 'EOF' > .gitignore
 # Dependencies
 node_modules/
 .pnp
@@ -24,4 +23,3 @@ out/
 Thumbs.db
 .vscode/
 .idea/
-EOF
