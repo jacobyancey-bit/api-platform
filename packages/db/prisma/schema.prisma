@@ -1,0 +1,77 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum PlanTier {
+  FREE
+  PRO
+  SCALE
+  ENTERPRISE
+}
+
+model User {
+  id                   String        @id @default(uuid())
+  email                String        @unique
+  name                 String?
+  passwordHash         String?
+  tier                 PlanTier      @default(FREE)
+  stripeCustomerId     String?       @unique
+  stripeSubscriptionId String?       @unique
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+  apiKeys              ApiKey[]
+  usageLogs            UsageLog[]
+}
+
+model ApiKey {
+  id                 String     @id @default(uuid())
+  userId             String
+  user               User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name               String
+  keyPrefix          String
+  keyHash            String     @unique
+  tier               PlanTier   @default(FREE)
+  rateLimitPerMinute Int        @default(60)
+  monthlyQuota       Int        @default(1000)
+  currentMonthUsage  Int        @default(0)
+  isActive           Boolean    @default(true)
+  lastUsedAt         DateTime?
+  createdAt          DateTime   @default(now())
+  usageLogs          UsageLog[]
+
+  @@index([userId])
+  @@index([keyHash])
+}
+
+model UsageLog {
+  id         String   @id @default(uuid())
+  apiKeyId   String
+  apiKey     ApiKey   @relation(fields: [apiKeyId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  engine     String
+  endpoint   String
+  statusCode Int
+  latencyMs  Float
+  createdAt  DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([apiKeyId, createdAt])
+}
+
+model ConsultingInquiry {
+  id             String   @id @default(uuid())
+  name           String
+  email          String
+  company        String?
+  budgetRange    String
+  engineInterest String
+  projectDetails String
+  status         String   @default("NEW")
+  createdAt      DateTime @default(now())
+}

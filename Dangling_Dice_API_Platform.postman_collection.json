@@ -1,0 +1,180 @@
+{
+  "info": {
+    "name": "Dangling Dice Studios™ — Stateless Compute API Platform",
+    "description": "Official Postman Collection for Dangling Dice Studios™ (dangling-dice-studios.com) Developer Compute APIs: Schema Inference, GIS Parcel Math, Luhn-Verified PII Redaction, and Financial Amortization.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "gatewayUrl",
+      "value": "http://localhost:4100",
+      "type": "string"
+    },
+    {
+      "key": "apiKey",
+      "value": "dds_live_dangling_dice_demo_key_2026",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "01. Health & OpenAPI Discovery",
+      "item": [
+        {
+          "name": "GET /health",
+          "request": {
+            "method": "GET",
+            "url": "{{gatewayUrl}}/health"
+          }
+        },
+        {
+          "name": "GET /v1/openapi.json",
+          "request": {
+            "method": "GET",
+            "url": "{{gatewayUrl}}/v1/openapi.json"
+          }
+        }
+      ]
+    },
+    {
+      "name": "02. Engine 1 — Schema Conversion (@dangling-dice/engine-schema)",
+      "item": [
+        {
+          "name": "POST /v1/schema/infer (JSON to Zod, TS, SQL, JSON Schema)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{apiKey}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rootName\": \"StudioOrder\",\n  \"jsonInput\": {\n    \"id\": \"550e8400-e29b-41d4-a716-446655440000\",\n    \"buyerEmail\": \"creator@dangling-dice-studios.com\",\n    \"amountCents\": 2900,\n    \"isPaid\": true\n  }\n}"
+            },
+            "url": "{{gatewayUrl}}/v1/schema/infer"
+          }
+        },
+        {
+          "name": "POST /v1/schema/sql-to-ts (SQL DDL to TypeScript & Zod)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{apiKey}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sqlDdl\": \"CREATE TABLE studio_assets (id UUID PRIMARY KEY, title VARCHAR(255) NOT NULL, price_cents INTEGER NOT NULL, metadata JSONB);\"\n}"
+            },
+            "url": "{{gatewayUrl}}/v1/schema/sql-to-ts"
+          }
+        }
+      ]
+    },
+    {
+      "name": "03. Engine 2 — GIS & Parcel Math (@dangling-dice/engine-geo)",
+      "item": [
+        {
+          "name": "POST /v1/geo/parcel-metrics (Polygon Acreage, SqFt, Perimeter, Centroid)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{apiKey}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"coordinates\": [\n    [-97.7431, 30.2672],\n    [-97.7401, 30.2672],\n    [-97.7401, 30.2698],\n    [-97.7431, 30.2698]\n  ]\n}"
+            },
+            "url": "{{gatewayUrl}}/v1/geo/parcel-metrics"
+          }
+        },
+        {
+          "name": "POST /v1/geo/distance (Haversine Distance & Compass Bearing)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{apiKey}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"from\": { \"lat\": 30.2747, \"lng\": -97.7404 },\n  \"to\": { \"lat\": 32.7787, \"lng\": -96.8089 }\n}"
+            },
+            "url": "{{gatewayUrl}}/v1/geo/distance"
+          }
+        }
+      ]
+    },
+    {
+      "name": "04. Engine 3 — PII Redaction & Luhn (@dangling-dice/engine-privacy)",
+      "item": [
+        {
+          "name": "POST /v1/privacy/redact (Luhn & Regex PII Sanitizer)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{apiKey}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"text\": \"Customer studio@dangling-dice-studios.com submitted card 4532-0151-1283-0366 and SSN 123-45-6789\",\n  \"mode\": \"placeholder\"\n}"
+            },
+            "url": "{{gatewayUrl}}/v1/privacy/redact"
+          }
+        },
+        {
+          "name": "POST /v1/privacy/mask-json (Recursive JSON Key Masking)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{apiKey}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"payload\": {\n    \"user\": \"jacobyancey\",\n    \"password\": \"SuperSecretStudioPass\",\n    \"stripe\": {\n      \"api_key\": \"sk_live_9876543210abcdef\"\n    }\n  }\n}"
+            },
+            "url": "{{gatewayUrl}}/v1/privacy/mask-json"
+          }
+        }
+      ]
+    },
+    {
+      "name": "05. Engine 4 — Financial Compute (@dangling-dice/engine-finance)",
+      "item": [
+        {
+          "name": "POST /v1/finance/amortization (Loan Schedule)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{apiKey}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"principal\": 250000,\n  \"annualRatePercent\": 6.5,\n  \"termMonths\": 360\n}"
+            },
+            "url": "{{gatewayUrl}}/v1/finance/amortization"
+          }
+        },
+        {
+          "name": "POST /v1/finance/extra-payments (Payoff Acceleration)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{apiKey}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"principal\": 250000,\n  \"annualRatePercent\": 6.5,\n  \"termMonths\": 360,\n  \"extraMonthlyPayment\": 300\n}"
+            },
+            "url": "{{gatewayUrl}}/v1/finance/extra-payments"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,17 +1,23 @@
 {
-  "name": "api-project",
+  "name": "dangling-dice-api-platform",
   "version": "1.0.0",
   "private": true,
+  "description": "Dangling Dice Studios™ (dangling-dice-studios.com) — Stateless Compute API Platform & Interactive Developer Sandboxes",
   "workspaces": [
     "packages/*",
     "apps/*"
   ],
   "scripts": {
+    "build": "npm run build --workspace=@dangling-dice/engine-finance && npm run build --workspace=@dangling-dice/engine-schema && npm run build --workspace=@dangling-dice/engine-geo && npm run build --workspace=@dangling-dice/engine-privacy && npm run build --workspace=@dangling-dice/db && npm run build --workspace=@dangling-dice/gateway",
+    "build:web": "npm run build --workspace=@dangling-dice/api-web",
+    "dev:gateway": "npm run dev --workspace=@dangling-dice/gateway",
+    "dev:web": "npm run dev --workspace=@dangling-dice/api-web",
+    "start:gateway": "npm run start --workspace=@dangling-dice/gateway",
     "test": "vitest run"
   },
   "devDependencies": {
-    "@types/node": "^26.6.6",
-    "typescript": "^7.0.2",
+    "@types/node": "^22.13.4",
+    "typescript": "^5.7.3",
     "vitest": "^5.1.0"
   }
 }
