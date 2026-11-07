@@ -85,5 +85,53 @@ describe("Dangling Dice Studios API Gateway", () => {
         expect(privRes.statusCode).toBe(200);
         expect(privRes.json().data.redactionCount).toBe(2);
     });
+
+    it("supports self-serve key creation, Stripe webhook tier upgrade, and enterprise inquiry intake", async () => {
+        const keyRes = await app.inject({
+            method: "POST",
+            url: "/v1/keys",
+            payload: { email: "buyer@dangling-dice-studios.com", name: "SaaS Key" },
+        });
+        expect(keyRes.statusCode).toBe(201);
+        expect(keyRes.json().record.tier).toBe("FREE");
+        expect(keyRes.json().record.monthlyQuota).toBe(1000);
+
+        const webhookRes = await app.inject({
+            method: "POST",
+            url: "/v1/billing/webhook",
+            payload: {
+                type: "checkout.session.completed",
+                data: {
+                    object: {
+                        metadata: {
+                            email: "buyer@dangling-dice-studios.com",
+                            tier: "PRO",
+                        },
+                    },
+                },
+            },
+        });
+        expect(webhookRes.statusCode).toBe(200);
+        expect(webhookRes.json().tier).toBe("PRO");
+
+        const listRes = await app.inject({
+            method: "GET",
+            url: "/v1/keys?email=buyer@dangling-dice-studios.com",
+        });
+        expect(listRes.json().keys[0].tier).toBe("PRO");
+        expect(listRes.json().keys[0].monthlyQuota).toBe(100000);
+
+        const leadRes = await app.inject({
+            method: "POST",
+            url: "/v1/enterprise/inquiries",
+            payload: {
+                name: "Enterprise CTO",
+                email: "cto@enterprise.io",
+                budgetRange: "$5,000 - $10,000",
+                projectDetails: "Deploy private VPC GIS & Schema engine cluster",
+            },
+        });
+        expect(leadRes.statusCode).toBe(201);
+    });
 });
 

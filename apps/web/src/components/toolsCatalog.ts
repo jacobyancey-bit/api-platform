@@ -100,3 +100,4 @@ export const STUDIO_TOOLS: ToolMetadata[] = [
         enginePackage: "@dangling-dice/engine-finance",
     },
 ];
+

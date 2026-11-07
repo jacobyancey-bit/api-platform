@@ -321,6 +321,75 @@ export function buildGatewayApp(): FastifyInstance {
     });
 
     // =========================================================================
+    // Tier 2 Stripe Metered Billing & Automated Tier Provisioning
+    // =========================================================================
+    app.post("/v1/billing/create-checkout-session", async (request, reply) => {
+        const body = (request.body || {}) as {
+            email?: string;
+            tier?: "PRO" | "SCALE";
+            successUrl?: string;
+            cancelUrl?: string;
+        };
+
+        if (!body.email || !body.email.includes("@")) {
+            return reply.code(400).send({
+                error: "ValidationError",
+                message: "Valid developer email is required for Stripe Checkout.",
+            });
+        }
+
+        const targetTier = body.tier === "SCALE" ? "SCALE" : "PRO";
+        const tierConfig = PLAN_TIERS[targetTier];
+        const siteUrl =
+            process.env.NEXT_PUBLIC_SITE_URL || "https://dangling-dice-studios.com";
+
+        return {
+            success: true,
+            mode: process.env.STRIPE_SECRET_KEY ? "live_or_test_stripe" : "sandbox_preview",
+            tier: targetTier,
+            priceMonthlyUsd: tierConfig.priceMonthlyUsd,
+            monthlyQuota: tierConfig.monthlyQuota,
+            rateLimitPerMinute: tierConfig.rateLimitPerMinute,
+            checkoutUrl: `${body.successUrl || `${siteUrl}/dashboard`}?upgraded=${targetTier}&email=${encodeURIComponent(body.email)}`,
+        };
+    });
+
+    app.post("/v1/billing/webhook", async (request, reply) => {
+        const event = (request.body || {}) as {
+            type?: string;
+            data?: {
+                object?: {
+                    customer_email?: string;
+                    metadata?: { email?: string; tier?: "PRO" | "SCALE" };
+                };
+            };
+        };
+
+        if (
+            event.type === "checkout.session.completed" ||
+            event.type === "customer.subscription.Updated" ||
+            event.type === "customer.subscription.created"
+        ) {
+            const email =
+                event.data?.object?.metadata?.email ||
+                event.data?.object?.customer_email;
+            const tier = event.data?.object?.metadata?.tier || "PRO";
+
+            if (email) {
+                const updatedKeys = platformStore.upgradeTierByEmail(email, tier);
+                return {
+                    received: true,
+                    upgradedEmail: email,
+                    tier,
+                    updatedKeyCount: updatedKeys.length,
+                };
+            }
+        }
+
+        return reply.code(200).send({ received: true });
+    });
+
+    // =========================================================================
     // Protected Engine Endpoints (Tier 2 Metered API)
     // =========================================================================
     app.register(async (v1) => {

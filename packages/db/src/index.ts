@@ -190,6 +190,35 @@ class PlatformStore {
         return true;
     }
 
+    public upgradeTierByEmail(
+        email: string,
+        tier: PlanTier
+    ): ApiKeyRecord[] {
+        const normalized = email.toLowerCase().trim();
+        const tierSpec = PLAN_TIERS[tier];
+        const updated: ApiKeyRecord[] = [];
+
+        for (const record of this.keysById.values()) {
+            if (record.email === normalized && record.isActive) {
+                record.tier = tier;
+                record.rateLimitPerMinute = tierSpec.rateLimitPerMinute;
+                record.monthlyQuota = tierSpec.monthlyQuota;
+                updated.push(record);
+            }
+        }
+
+        if (updated.length === 0) {
+            const created = this.createApiKey({
+                email: normalized,
+                name: `${tierSpec.name} Key`,
+                tier,
+            });
+            updated.push(created.record);
+        }
+
+        return updated;
+    }
+
     public recordUsage(params: {
         apiKeyId: string;
         userId: string;
