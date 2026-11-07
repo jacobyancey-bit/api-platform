@@ -1,0 +1,27 @@
+cat << 'EOF' > .gitignore
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Production & Build outputs
+dist/
+build/
+out/
+
+# Environment & Secrets
+.env
+.env*.local
+
+# Logs & Cache
+*.log
+.npm/
+.turbo/
+.cache/
+
+# OS & IDE metadata
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+EOF
