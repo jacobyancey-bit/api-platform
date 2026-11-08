@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "Dangling Dice Studios™ — Stateless Compute API Platform",
-    "description": "Official Postman Collection for Dangling Dice Studios™ (dangling-dice-studios.com) Developer Compute APIs: Schema Inference, GIS Parcel Math, Luhn-Verified PII Redaction, and Financial Amortization.",
+    "description": "Official Postman Collection for Dangling Dice Studios™ (dangling-dice-studios.com) Developer Compute APIs: Schema Inference, GIS Parcel Math, WireGuard Config, Luhn & HIPAA PII Redaction, Financial Amortization, and Software Project Scoping.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -68,11 +68,26 @@
             },
             "url": "{{gatewayUrl}}/v1/schema/sql-to-ts"
           }
+        },
+        {
+          "name": "POST /v1/schema/inspect-uri (Database Connection String Doctor)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{apiKey}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"uri\": \"mongodb+srv://admin:p@ss:word#1@cluster0.example.mongodb.net/prod_db\"\n}"
+            },
+            "url": "{{gatewayUrl}}/v1/schema/inspect-uri"
+          }
         }
       ]
     },
     {
-      "name": "03. Engine 2 — GIS & Parcel Math (@dangling-dice/engine-geo)",
+      "name": "03. Engine 2 — GIS, VPN & Scanner (@dangling-dice/engine-geo)",
       "item": [
         {
           "name": "POST /v1/geo/parcel-metrics (Polygon Acreage, SqFt, Perimeter, Centroid)",
@@ -103,11 +118,41 @@
             },
             "url": "{{gatewayUrl}}/v1/geo/distance"
           }
+        },
+        {
+          "name": "POST /v1/geo/wireguard-config (WireGuard Tunnel Config Generator)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{apiKey}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"clientName\": \"workstation-alpha\",\n  \"serverEndpoint\": \"vpn.dangling-dice-studios.com:51820\",\n  \"peerIndex\": 2\n}"
+            },
+            "url": "{{gatewayUrl}}/v1/geo/wireguard-config"
+          }
+        },
+        {
+          "name": "POST /v1/geo/docscan-session (DocScanner Deep Link & QR Builder)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{apiKey}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionId\": \"scan_99481a\",\n  \"callbackUrl\": \"https://dangling-dice-studios.com/webhooks/docscan\",\n  \"documentTitle\": \"Signed_MSA_Contract.pdf\"\n}"
+            },
+            "url": "{{gatewayUrl}}/v1/geo/docscan-session"
+          }
         }
       ]
     },
     {
-      "name": "04. Engine 3 — PII Redaction & Luhn (@dangling-dice/engine-privacy)",
+      "name": "04. Engine 3 — PII Redaction & HIPAA Firewall (@dangling-dice/engine-privacy)",
       "item": [
         {
           "name": "POST /v1/privacy/redact (Luhn & Regex PII Sanitizer)",
@@ -138,11 +183,26 @@
             },
             "url": "{{gatewayUrl}}/v1/privacy/mask-json"
           }
+        },
+        {
+          "name": "POST /v1/privacy/hipaa-scrub (HIPAA Telemetry & Tracker Scrubber)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{apiKey}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"payload\": {\n    \"event\": \"dosage_logged\",\n    \"patientName\": \"Jane Doe\",\n    \"dosageMg\": 25,\n    \"fbclid\": \"IwAR123\"\n  },\n  \"queryUrl\": \"https://app.titrate.health/log?utm_source=meta&fbclid=IwAR999&gclid=Cj0KCQ\"\n}"
+            },
+            "url": "{{gatewayUrl}}/v1/privacy/hipaa-scrub"
+          }
         }
       ]
     },
     {
-      "name": "05. Engine 4 — Financial Compute (@dangling-dice/engine-finance)",
+      "name": "05. Engine 4 — Financial & Scoping Compute (@dangling-dice/engine-finance)",
       "item": [
         {
           "name": "POST /v1/finance/amortization (Loan Schedule)",
@@ -173,9 +233,73 @@
             },
             "url": "{{gatewayUrl}}/v1/finance/extra-payments"
           }
+        },
+        {
+          "name": "POST /v1/finance/cash-flow (NPV, IRR, ROI & Payback)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{apiKey}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"discountRatePercent\": 8,\n  \"initialInvestment\": 100000,\n  \"cashFlows\": [28000, 34000, 42000, 48000]\n}"
+            },
+            "url": "{{gatewayUrl}}/v1/finance/cash-flow"
+          }
+        },
+        {
+          "name": "POST /v1/finance/project-scope (Software Project Scoping & Deposit Calculator)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{apiKey}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"category\": \"FULLSTACK\",\n  \"hasBrandAssets\": true,\n  \"hasWrittenContent\": false,\n  \"hasDomainAndDns\": true,\n  \"designPreference\": \"bespoke_scratch\",\n  \"hourlyRateUsd\": 80\n}"
+            },
+            "url": "{{gatewayUrl}}/v1/finance/project-scope"
+          }
+        }
+      ]
+    },
+    {
+      "name": "06. Connected Ecosystem — DaaS Scraper & Leviathan AI",
+      "item": [
+        {
+          "name": "POST /v1/extract/scrape-job (DaaS Stealth Scraper Dispatcher)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{apiKey}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"targetUrl\": \"https://example.com/pricing\",\n  \"proxyMode\": \"tor_socks5\"\n}"
+            },
+            "url": "{{gatewayUrl}}/v1/extract/scrape-job"
+          }
+        },
+        {
+          "name": "POST /v1/ai/leviathan-generate (Marketing Leviathan AI Prompt)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{apiKey}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"prompt\": \"Create a high-converting developer launch sequence for our JSON-to-Zod API\",\n  \"modelType\": \"marketing_leviathan\"\n}"
+            },
+            "url": "{{gatewayUrl}}/v1/ai/leviathan-generate"
+          }
         }
       ]
     }
   ]
 }
-
