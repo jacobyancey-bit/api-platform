@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { inferFromJson, sqlToTypeScript } from "./index.js";
+import { inferFromJson, sqlToTypeScript, inspectDatabaseUri } from "./index.js";
 
 describe("inferFromJson", () => {
     it("infers TypeScript, Zod, JSON Schema, and SQL DDL from a sample JSON object", () => {
@@ -53,6 +53,19 @@ describe("sqlToTypeScript", () => {
         expect(result.typescript).toContain("metadata: Record<string, unknown> | null;");
         expect(result.zod).toContain("z.string().uuid()");
         expect(result.zod).toContain("z.boolean()");
+    });
+});
+
+describe("inspectDatabaseUri (Database Connection Inspector)", () => {
+    it("percent-encodes special password characters and generates .env snippet", () => {
+        const res = inspectDatabaseUri({
+            uri: "mongodb+srv://studioAdmin:MyP@ss:w0rd#2026@cluster0.danglingdice.mongodb.net/production_db?retryWrites=true",
+        });
+
+        expect(res.isValid).toBe(true);
+        expect(res.engine).toBe("mongodb");
+        expect(res.encodedSafeUri).toContain("MyP%40ss%3Aw0rd%232026");
+        expect(res.warnings.length).toBeGreaterThan(0);
     });
 });
 

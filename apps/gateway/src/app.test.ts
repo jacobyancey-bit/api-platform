@@ -133,5 +133,84 @@ describe("Dangling Dice Studios API Gateway", () => {
         });
         expect(leadRes.statusCode).toBe(201);
     });
+
+    it("executes all 7 connected Dangling Dice ecosystem APIs (Code_Craft, Titrate-Health, Studio DB URI, WireGuard VPN, DocScanner, DaaS Scraper, Leviathan AI)", async () => {
+        const headers = { authorization: `Bearer ${DEFAULT_DEMO_RAW_KEY}` };
+
+        const scopeRes = await app.inject({
+            method: "POST",
+            url: "/v1/finance/project-scope",
+            headers,
+            payload: {
+                category: "FULLSTACK",
+                hasBrandAssets: true,
+                hasWrittenContent: true,
+                hasDomainAndDns: true,
+                designPreference: "component_library",
+                hourlyRateUsd: 90,
+            },
+        });
+        expect(scopeRes.statusCode).toBe(200);
+        expect(scopeRes.json().data.initialDepositUsd).toBeGreaterThan(1000);
+
+        const hipaaRes = await app.inject({
+            method: "POST",
+            url: "/v1/privacy/hipaa-scrub",
+            headers,
+            payload: {
+                payload: { event: "checkin", diagnosis: "E66.9", fbclid: "123" },
+                queryUrl: "https://dangling-dice-studios.com/?gbraid=xyz",
+            },
+        });
+        expect(hipaaRes.statusCode).toBe(200);
+        expect(hipaaRes.json().data.strippedPhiFields).toContain("diagnosis");
+
+        const uriRes = await app.inject({
+            method: "POST",
+            url: "/v1/schema/inspect-uri",
+            headers,
+            payload: {
+                uri: "postgresql://dds_user:p@ss#1@localhost:5434/dangling_dice_api",
+            },
+        });
+        expect(uriRes.statusCode).toBe(200);
+        expect(uriRes.json().data.engine).toBe("postgresql");
+
+        const wgRes = await app.inject({
+            method: "POST",
+            url: "/v1/geo/wireguard-config",
+            headers,
+            payload: { clientName: "prod-node-1", serverEndpoint: "vpn.dangling-dice-studios.com:51820" },
+        });
+        expect(wgRes.statusCode).toBe(200);
+        expect(wgRes.json().data.clientConfigFile).toContain("[Peer]");
+
+        const scanRes = await app.inject({
+            method: "POST",
+            url: "/v1/geo/docscan-session",
+            headers,
+            payload: { sessionId: "s_123", callbackUrl: "https://dangling-dice-studios.com/api/scanner/upload" },
+        });
+        expect(scanRes.statusCode).toBe(200);
+        expect(scanRes.json().data.deepLinkUri).toContain("docscan://");
+
+        const daasRes = await app.inject({
+            method: "POST",
+            url: "/v1/extract/scrape-job",
+            headers,
+            payload: { targetUrl: "https://dangling-dice-studios.com" },
+        });
+        expect(daasRes.statusCode).toBe(200);
+        expect(daasRes.json().data.status).toBe("QUEUED_BULLMQ");
+
+        const aiRes = await app.inject({
+            method: "POST",
+            url: "/v1/ai/leviathan-generate",
+            headers,
+            payload: { prompt: "Generate launch copy for Dangling Dice API Platform" },
+        });
+        expect(aiRes.statusCode).toBe(200);
+        expect(aiRes.json().data.status).toBe("DISPATCHED");
+    });
 });
 

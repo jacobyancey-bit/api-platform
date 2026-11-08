@@ -55,6 +55,40 @@ export interface PointInPolygonResult {
     distanceToCentroidMeters: number;
 }
 
+export interface WireGuardProfileRequest {
+    clientName: string;
+    serverEndpoint: string;
+    serverPublicKey?: string;
+    peerIndex?: number;
+    dnsServers?: string[];
+    splitTunnelCidrs?: string[];
+}
+
+export interface WireGuardProfileResult {
+    clientName: string;
+    assignedClientIpCidr: string;
+    serverGatewayIp: string;
+    dns: string;
+    allowedIps: string;
+    clientConfigFile: string;
+    serverPeerSnippet: string;
+}
+
+export interface DocScanBridgeRequest {
+    sessionId: string;
+    callbackUrl: string;
+    documentTitle?: string;
+    pageDimensionsPoints?: Array<{ widthPt: number; heightPt: number }>;
+}
+
+export interface DocScanBridgeResult {
+    deepLinkUri: string;
+    qrPayload: string;
+    pageCount: number;
+    estimatedFileSizeKb: number;
+    standardFormat: string;
+}
+
 const EARTH_RADIUS_METERS = 6371008.8;
 const SQ_METERS_PER_ACRE = 4046.8564224;
 const SQ_METERS_PER_HECTARE = 10000;
@@ -262,4 +296,80 @@ export function isPointInPolygon(params: PointInPolygonRequest): PointInPolygonR
         distanceToCentroidMeters: dist.distanceMeters,
     };
 }
+
+export function generateWireGuardConfig(
+    params: WireGuardProfileRequest
+): WireGuardProfileResult {
+    const clientName = (params.clientName || "dangling-dice-dev").replace(/[^a-zA-Z0-9_\-]/g, "");
+    const serverEndpoint = (params.serverEndpoint || "vpn.dangling-dice-studios.com:51820").trim();
+    const peerIndex = Math.max(2, Math.min(254, Math.floor(params.peerIndex ?? 2)));
+    const assignedClientIpCidr = `10.66.66.${peerIndex}/32`;
+    const serverGatewayIp = "10.66.66.1/24";
+    const dns = (params.dnsServers && params.dnsServers.length > 0
+        ? params.dnsServers
+        : ["1.1.1.1", "1.0.0.1"]
+    ).join(", ");
+    const allowedIps = (params.splitTunnelCidrs && params.splitTunnelCidrs.length > 0
+        ? params.splitTunnelCidrs
+        : ["0.0.0.0/0", "::/0"]
+    ).join(", ");
+    const serverPubKey =
+        params.serverPublicKey || "DDS_SERVER_WG_PUBKEY_REPLACE_OR_PROVISION=";
+
+    const clientConfigFile = [
+        `# Dangling Dice Studios™ WireGuard Client Profile (${clientName})`,
+        `[Interface]`,
+        `PrivateKey = <CLIENT_PRIVATE_KEY_GENERATED_LOCALLY>`,
+        `Address = ${assignedClientIpCidr}`,
+        `DNS = ${dns}`,
+        `MTU = 1420`,
+        ``,
+        `[Peer]`,
+        `PublicKey = ${serverPubKey}`,
+        `Endpoint = ${serverEndpoint}`,
+        `AllowedIPs = ${allowedIps}`,
+        `PersistentKeepalive = 25`,
+    ].join("\n");
+
+    const serverPeerSnippet = [
+        `# Add to /etc/wireguard/wg0.conf on ${serverEndpoint}`,
+        `[Peer] # ${clientName}`,
+        `PublicKey = <CLIENT_PUBLIC_KEY>`,
+        `AllowedIPs = ${assignedClientIpCidr}`,
+    ].join("\n");
+
+    return {
+        clientName,
+        assignedClientIpCidr,
+        serverGatewayIp,
+        dns,
+        allowedIps,
+        clientConfigFile,
+        serverPeerSnippet,
+    };
+}
+
+export function buildDocScannerSession(params: DocScanBridgeRequest): DocScanBridgeResult {
+    const sessionId = (params.sessionId || "sess_dds_2026").trim();
+    const callbackUrl = (
+        params.callbackUrl || "https://dangling-dice-studios.com/api/scanner/upload"
+    ).trim();
+    const pages = params.pageDimensionsPoints || [{ widthPt: 612, heightPt: 792 }];
+    const pageCount = pages.length;
+
+    const deepLinkUri = `docscan://scan?session=${encodeURIComponent(sessionId)}&callback=${encodeURIComponent(callbackUrl)}${params.documentTitle ? `&title=${encodeURIComponent(params.documentTitle)}` : ""}`;
+
+    const first = pages[0] || { widthPt: 612, heightPt: 792 };
+    const isLetter = Math.abs(first.widthPt - 612) <= 5 && Math.abs(first.heightPt - 792) <= 5;
+    const isA4 = Math.abs(first.widthPt - 595) <= 5 && Math.abs(first.heightPt - 842) <= 5;
+
+    return {
+        deepLinkUri,
+        qrPayload: deepLinkUri,
+        pageCount,
+        estimatedFileSizeKb: pageCount * 145,
+        standardFormat: isLetter ? "US Letter (8.5 x 11 in)" : isA4 ? "ISO A4" : "Custom Page Geometry",
+    };
+}
+
 

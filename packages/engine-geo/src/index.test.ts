@@ -3,6 +3,8 @@ import {
     calculateDistanceAndBearing,
     calculateParcelMetrics,
     isPointInPolygon,
+    generateWireGuardConfig,
+    buildDocScannerSession,
 } from "./index.js";
 
 describe("calculateDistanceAndBearing", () => {
@@ -61,6 +63,25 @@ describe("isPointInPolygon", () => {
             polygon: parcel,
         });
         expect(outsideCheck.inside).toBe(false);
+    });
+});
+
+describe("generateWireGuardConfig & buildDocScannerSession", () => {
+    it("generates a deterministic WireGuard client profile and DocScanner deep link", () => {
+        const wg = generateWireGuardConfig({
+            clientName: "jacob-laptop",
+            serverEndpoint: "vpn.dangling-dice-studios.com:51820",
+            peerIndex: 12,
+        });
+        expect(wg.assignedClientIpCidr).toBe("10.66.66.12/32");
+        expect(wg.clientConfigFile).toContain("[Interface]");
+
+        const scan = buildDocScannerSession({
+            sessionId: "sess_99",
+            callbackUrl: "https://dangling-dice-studios.com/api/scanner/upload",
+        });
+        expect(scan.deepLinkUri).toContain("docscan://scan?session=sess_99");
+        expect(scan.standardFormat).toBe("US Letter (8.5 x 11 in)");
     });
 });
 

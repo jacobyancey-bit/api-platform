@@ -1,16 +1,23 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { inferFromJson, sqlToTypeScript } from "@dangling-dice/engine-schema";
+import {
+    inferFromJson,
+    sqlToTypeScript,
+    inspectDatabaseUri,
+} from "@dangling-dice/engine-schema";
 import {
     calculateParcelMetrics,
     calculateDistanceAndBearing,
     isPointInPolygon,
+    generateWireGuardConfig,
+    buildDocScannerSession,
 } from "@dangling-dice/engine-geo";
 import {
     redactText,
     validateLuhn,
     maskJsonPayload,
+    scrubHipaaTelemetry,
     RedactionMode,
 } from "@dangling-dice/engine-privacy";
 import {
@@ -18,6 +25,8 @@ import {
     simulateExtraPayments,
     calculateCompoundInterest,
     calculateCashFlowMetrics,
+    calculateProjectScope,
+    SoftwareProjectCategory,
 } from "@dangling-dice/engine-finance";
 import { STUDIO_TOOLS, ToolSlug, ToolMetadata } from "./toolsCatalog";
 
@@ -128,6 +137,55 @@ export function ToolSandboxWorkspace({
     const [investMonthly, setInvestMonthly] = useState(1000);
     const [investRate, setInvestRate] = useState(8.0);
     const [investYears, setInvestYears] = useState(10);
+
+    // 9. Software Project Scoping (Code_Craft)
+    const [scopeCategory, setScopeCategory] =
+        useState<SoftwareProjectCategory>("FULLSTACK");
+    const [hasBrand, setHasBrand] = useState(true);
+    const [hasContent, setHasContent] = useState(true);
+    const [hasDns, setHasDns] = useState(false);
+    const [designPref, setDesignPref] = useState<
+        "component_library" | "bespoke_scratch"
+    >("component_library");
+    const [hourlyRateUsd, setHourlyRateUsd] = useState(100);
+
+    // 10. HIPAA Telemetry Firewall (Titrate-Health)
+    const [hipaaPayloadText, setHipaaPayloadText] = useState(
+        JSON.stringify(
+            {
+                event: "glp1_intake_submitted",
+                planTier: "PRO",
+                patientEmail: "patient@example.com",
+                diagnosis: "E66.9",
+                weightLb: 218,
+                gbraid: "ads_click_99812",
+            },
+            null,
+            2
+        )
+    );
+    const [hipaaUrl, setHipaaUrl] = useState(
+        "https://dangling-dice-studios.com/intake?fbclid=iwAR99123&step=complete"
+    );
+
+    // 11. Database URI Inspector
+    const [dbUriInput, setDbUriInput] = useState(
+        "mongodb+srv://studioAdmin:MyP@ss:w0rd#2026@cluster0.danglingdice.mongodb.net/dangling_dice_db?retryWrites=true&w=majority"
+    );
+
+    // 12. WireGuard Config Generator (Dangling Dice VPN)
+    const [wgClientName, setWgClientName] = useState("jacob-workstation");
+    const [wgEndpoint, setWgEndpoint] = useState(
+        "vpn.dangling-dice-studios.com:51820"
+    );
+    const [wgPeerIndex, setWgPeerIndex] = useState(14);
+
+    // 13. DocScanner Mobile Bridge
+    const [scanSessionId, setScanSessionId] = useState("sess_dds_live_8841");
+    const [scanCallbackUrl, setScanCallbackUrl] = useState(
+        "https://dangling-dice-studios.com/api/scanner/upload"
+    );
+    const [scanDocTitle, setScanDocTitle] = useState("Signed_Architecture_MSA");
 
     // Deterministic Engine Evaluations
     const evaluation = useMemo(() => {
@@ -335,6 +393,114 @@ export function ToolSandboxWorkspace({
                         ],
                     };
                 }
+                case "software-project-scoping": {
+                    const payload = {
+                        category: scopeCategory,
+                        hasBrandAssets: hasBrand,
+                        hasWrittenContent: hasContent,
+                        hasDomainAndDns: hasDns,
+                        designPreference: designPref,
+                        hourlyRateUsd,
+                    };
+                    const res = calculateProjectScope(payload);
+                    return {
+                        ok: true as const,
+                        payload,
+                        output: JSON.stringify(res, null, 2),
+                        summary: [
+                            {
+                                label: "Est. Hours",
+                                value: `${res.estimatedHourRange[0]}–${res.estimatedHourRange[1]} hrs`,
+                            },
+                            {
+                                label: "Cost Bracket",
+                                value: `$${res.estimatedCostRangeUsd[0].toLocaleString()}–$${res.estimatedCostRangeUsd[1].toLocaleString()}`,
+                            },
+                            {
+                                label: "50% Deposit",
+                                value: `$${res.initialDepositUsd.toLocaleString()}`,
+                            },
+                        ],
+                    };
+                }
+                case "hipaa-telemetry-firewall": {
+                    const parsed = JSON.parse(hipaaPayloadText);
+                    const payload = { payload: parsed, queryUrl: hipaaUrl };
+                    const res = scrubHipaaTelemetry(payload);
+                    return {
+                        ok: true as const,
+                        payload,
+                        output: JSON.stringify(res, null, 2),
+                        summary: [
+                            {
+                                label: "PHI Keys Stripped",
+                                value: String(res.strippedPhiFields.length),
+                            },
+                            {
+                                label: "Ad Trackers Stripped",
+                                value: String(res.strippedAdTrackerParams.length),
+                            },
+                            { label: "HIPAA Safe", value: "YES" },
+                        ],
+                    };
+                }
+                case "database-uri-inspector": {
+                    const payload = { uri: dbUriInput };
+                    const res = inspectDatabaseUri(payload);
+                    return {
+                        ok: true as const,
+                        payload,
+                        output: `${res.envSnippet}\n\n// --- Full Diagnostic ---\n${JSON.stringify(res, null, 2)}`,
+                        summary: [
+                            { label: "Engine", value: res.engine.toUpperCase() },
+                            { label: "Host", value: res.host },
+                            {
+                                label: "Warnings",
+                                value: String(res.warnings.length),
+                            },
+                        ],
+                    };
+                }
+                case "wireguard-config-generator": {
+                    const payload = {
+                        clientName: wgClientName,
+                        serverEndpoint: wgEndpoint,
+                        peerIndex: wgPeerIndex,
+                    };
+                    const res = generateWireGuardConfig(payload);
+                    return {
+                        ok: true as const,
+                        payload,
+                        output: `${res.clientConfigFile}\n\n${res.serverPeerSnippet}`,
+                        summary: [
+                            {
+                                label: "Tunnel IP",
+                                value: res.assignedClientIpCidr,
+                            },
+                            { label: "DNS", value: res.dns },
+                        ],
+                    };
+                }
+                case "docscanner-qr-bridge": {
+                    const payload = {
+                        sessionId: scanSessionId,
+                        callbackUrl: scanCallbackUrl,
+                        documentTitle: scanDocTitle,
+                    };
+                    const res = buildDocScannerSession(payload);
+                    return {
+                        ok: true as const,
+                        payload,
+                        output: JSON.stringify(res, null, 2),
+                        summary: [
+                            { label: "Format", value: res.standardFormat },
+                            {
+                                label: "Est. PDF Size",
+                                value: `${res.estimatedFileSizeKb} KB`,
+                            },
+                        ],
+                    };
+                }
             }
         } catch (err: any) {
             return {
@@ -369,6 +535,21 @@ export function ToolSandboxWorkspace({
         investMonthly,
         investRate,
         investYears,
+        scopeCategory,
+        hasBrand,
+        hasContent,
+        hasDns,
+        designPref,
+        hourlyRateUsd,
+        hipaaPayloadText,
+        hipaaUrl,
+        dbUriInput,
+        wgClientName,
+        wgEndpoint,
+        wgPeerIndex,
+        scanSessionId,
+        scanCallbackUrl,
+        scanDocTitle,
     ]);
 
     const snippet = useMemo(() => {
@@ -668,6 +849,162 @@ print(res.json()["data"])`;
                                 className="input"
                                 value={investYears}
                                 onChange={(e) => setInvestYears(Number(e.target.value))}
+                            />
+                        </>
+                    )}
+
+                    {activeSlug === "software-project-scoping" && (
+                        <>
+                            <label className="field-label">Project Category</label>
+                            <select
+                                className="select"
+                                value={scopeCategory}
+                                onChange={(e) =>
+                                    setScopeCategory(
+                                        e.target.value as SoftwareProjectCategory
+                                    )
+                                }
+                            >
+                                <option value="FULLSTACK">Full-Stack Web Platform</option>
+                                <option value="MOBILE_APPS">
+                                    Cross-Platform Mobile App (Flutter/React Native)
+                                </option>
+                                <option value="ECOMMERCE">E-Commerce & Stripe Platform</option>
+                                <option value="WEBSITE_CREATION">Marketing Website</option>
+                                <option value="CUSTOM_INTEGRATION">
+                                    Custom API / Microservice Integration
+                                </option>
+                            </select>
+                            <label className="field-label">Design Architecture</label>
+                            <select
+                                className="select"
+                                value={designPref}
+                                onChange={(e) =>
+                                    setDesignPref(e.target.value as any)
+                                }
+                            >
+                                <option value="component_library">
+                                    Component Library Acceleration (-3h to -5h)
+                                </option>
+                                <option value="bespoke_scratch">
+                                    Bespoke Scratch Design System (+10h to +16h)
+                                </option>
+                            </select>
+                            <label className="field-label">Hourly Engineering Rate ($)</label>
+                            <input
+                                type="number"
+                                className="input"
+                                value={hourlyRateUsd}
+                                onChange={(e) => setHourlyRateUsd(Number(e.target.value))}
+                            />
+                            <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
+                                <label style={{ fontSize: "0.85rem" }}>
+                                    <input
+                                        type="checkbox"
+                                        checked={hasBrand}
+                                        onChange={(e) => setHasBrand(e.target.checked)}
+                                    />{" "}
+                                    Has Brand Assets
+                                </label>
+                                <label style={{ fontSize: "0.85rem" }}>
+                                    <input
+                                        type="checkbox"
+                                        checked={hasContent}
+                                        onChange={(e) => setHasContent(e.target.checked)}
+                                    />{" "}
+                                    Has Written Copy
+                                </label>
+                                <label style={{ fontSize: "0.85rem" }}>
+                                    <input
+                                        type="checkbox"
+                                        checked={hasDns}
+                                        onChange={(e) => setHasDns(e.target.checked)}
+                                    />{" "}
+                                    Has Domain & DNS
+                                </label>
+                            </div>
+                        </>
+                    )}
+
+                    {activeSlug === "hipaa-telemetry-firewall" && (
+                        <>
+                            <label className="field-label">
+                                Raw Telemetry / Analytics Event JSON
+                            </label>
+                            <textarea
+                                className="textarea"
+                                value={hipaaPayloadText}
+                                onChange={(e) => setHipaaPayloadText(e.target.value)}
+                            />
+                            <label className="field-label">
+                                Page URL with Ad-Tech Click IDs
+                            </label>
+                            <input
+                                className="input"
+                                value={hipaaUrl}
+                                onChange={(e) => setHipaaUrl(e.target.value)}
+                            />
+                        </>
+                    )}
+
+                    {activeSlug === "database-uri-inspector" && (
+                        <>
+                            <label className="field-label">
+                                Raw Database Connection String (MongoDB / Postgres / Redis)
+                            </label>
+                            <textarea
+                                className="textarea"
+                                value={dbUriInput}
+                                onChange={(e) => setDbUriInput(e.target.value)}
+                            />
+                        </>
+                    )}
+
+                    {activeSlug === "wireguard-config-generator" && (
+                        <>
+                            <label className="field-label">Peer / Device Name</label>
+                            <input
+                                className="input"
+                                value={wgClientName}
+                                onChange={(e) => setWgClientName(e.target.value)}
+                            />
+                            <label className="field-label">VPN Gateway Endpoint</label>
+                            <input
+                                className="input"
+                                value={wgEndpoint}
+                                onChange={(e) => setWgEndpoint(e.target.value)}
+                            />
+                            <label className="field-label">
+                                Peer Subnet Index (2 - 254)
+                            </label>
+                            <input
+                                type="number"
+                                className="input"
+                                value={wgPeerIndex}
+                                onChange={(e) => setWgPeerIndex(Number(e.target.value))}
+                            />
+                        </>
+                    )}
+
+                    {activeSlug === "docscanner-qr-bridge" && (
+                        <>
+                            <label className="field-label">Browser Session ID</label>
+                            <input
+                                className="input"
+                                value={scanSessionId}
+                                onChange={(e) => setScanSessionId(e.target.value)}
+                            />
+                            <label className="field-label">Webhook Callback URL</label>
+                            <input
+                                className="input"
+                                value={scanCallbackUrl}
+                                onChange={(e) => setScanCallbackUrl(e.target.value)}
+                            />
+                            <label className="field-label">Target PDF Filename</label>
+                            <input
+                                className="input"
+                                value={scanDocTitle}
+                                onChange={(e) => setScanDocTitle(e.target.value)}
                             />
                         </>
                     )}

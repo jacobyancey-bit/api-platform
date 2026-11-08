@@ -33,6 +33,24 @@ export interface SqlToTypeScriptResult {
     zod: string;
 }
 
+export interface DatabaseUriInspectRequest {
+    uri: string;
+}
+
+export interface DatabaseUriInspectResult {
+    isValid: boolean;
+    protocol: string;
+    engine: "mongodb" | "postgresql" | "mysql" | "redis" | "unknown";
+    host: string;
+    port: number | null;
+    databaseName: string | null;
+    username: string | null;
+    hasPassword: boolean;
+    encodedSafeUri: string;
+    envSnippet: string;
+    warnings: string[];
+}
+
 function toPascalCase(input: string): string {
     const cleaned = input
         .replace(/[^a-zA-Z0-9_]+/g, " ")
@@ -369,4 +387,83 @@ export function sqlToTypeScript(params: SqlToTypeScriptRequest): SqlToTypeScript
         zod,
     };
 }
+
+export function inspectDatabaseUri(params: DatabaseUriInspectRequest): DatabaseUriInspectResult {
+    const raw = (params.uri || "").trim();
+    if (!raw) {
+        throw new Error("Database connection URI is required.");
+    }
+
+    const match = raw.match(
+        /^([a-zA-Z0-9+\-]+):\/\/(?:([^:@\/]+)(?::([^@\/]*))?@)?([^:\/?#]+)(?::(\d+))?(?:\/([^?#]*))?(?:\?(.*))?$/
+    );
+
+    if (!match) {
+        throw new Error(
+            "Invalid database URI format. Expected protocol://user:password@host:port/database"
+        );
+    }
+
+    const [, protocolRaw, rawUser, rawPass, host, portStr, dbPath, queryStr] = match;
+    const protocol = protocolRaw.toLowerCase();
+    const warnings: string[] = [];
+
+    let engine: DatabaseUriInspectResult["engine"] = "unknown";
+    if (protocol.startsWith("mongodb")) engine = "mongodb";
+    else if (protocol.startsWith("postgres")) engine = "postgresql";
+    else if (protocol.startsWith("mysql")) engine = "mysql";
+    else if (protocol.startsWith("redis")) engine = "redis";
+
+    const encodedUser = rawUser ? encodeURIComponent(decodeURIComponent(rawUser)) : null;
+    let encodedPass: string | null = null;
+    if (rawPass !== undefined) {
+        try {
+            encodedPass = encodeURIComponent(decodeURIComponent(rawPass));
+        } catch {
+            encodedPass = encodeURIComponent(rawPass);
+        }
+        if (encodedPass !== rawPass) {
+            warnings.push(
+                "Password contained special characters (@, :, /, #, ?) and was RFC-3986 percent-encoded."
+            );
+        }
+    } else {
+        warnings.push("No password detected in connection string.");
+    }
+
+    const port = portStr ? parseInt(portStr, 10) : null;
+    if (protocol === "mongodb+srv" && port !== null) {
+        warnings.push("mongodb+srv:// URIs cannot specify a port number.");
+    }
+
+    const authSegment = encodedUser
+        ? `${encodedUser}${encodedPass !== null ? `:${encodedPass}` : ""}@`
+        : "";
+    const portSegment = port !== null && protocol !== "mongodb+srv" ? `:${port}` : "";
+    const dbSegment = dbPath !== undefined ? `/${dbPath}` : "";
+    const querySegment = queryStr ? `?${queryStr}` : "";
+
+    const encodedSafeUri = `${protocol}://${authSegment}${host}${portSegment}${dbSegment}${querySegment}`;
+    const envVarName =
+        engine === "mongodb"
+            ? "MONGODB_URI"
+            : engine === "redis"
+              ? "REDIS_URL"
+              : "DATABASE_URL";
+
+    return {
+        isValid: true,
+        protocol,
+        engine,
+        host,
+        port,
+        databaseName: dbPath || null,
+        username: rawUser || null,
+        hasPassword: Boolean(rawPass),
+        encodedSafeUri,
+        envSnippet: `${envVarName}="${encodedSafeUri}"`,
+        warnings,
+    };
+}
+
 

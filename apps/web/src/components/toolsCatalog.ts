@@ -1,12 +1,17 @@
 export type ToolSlug =
     | "json-to-zod"
     | "sql-to-typescript"
+    | "database-uri-inspector"
     | "polygon-acreage-calculator"
     | "coordinate-distance-bearing"
+    | "wireguard-config-generator"
+    | "docscanner-qr-bridge"
     | "pii-redactor"
     | "json-secret-masker"
+    | "hipaa-telemetry-firewall"
     | "loan-amortization-calculator"
-    | "compound-interest-calculator";
+    | "compound-interest-calculator"
+    | "software-project-scoping";
 
 export interface ToolMetadata {
     slug: ToolSlug;
@@ -98,6 +103,56 @@ export const STUDIO_TOOLS: ToolMetadata[] = [
             "Model multi-year compound investment growth across daily/monthly/annual frequencies alongside Net Present Value (NPV) and Internal Rate of Return (IRR).",
         endpoint: "/v1/finance/compound-interest",
         enginePackage: "@dangling-dice/engine-finance",
+    },
+    {
+        slug: "software-project-scoping",
+        title: "Software Project Scoping, Engineering Hours & Deposit Calculator",
+        shortTitle: "Project Quote & Scope (Code_Craft)",
+        category: "Finance",
+        seoSubtitle:
+            "Calculate software engineering hour ranges, cost brackets, and 50% initial deposits from project complexity rules.",
+        endpoint: "/v1/finance/project-scope",
+        enginePackage: "@dangling-dice/engine-finance",
+    },
+    {
+        slug: "hipaa-telemetry-firewall",
+        title: "HIPAA PHI Telemetry Firewall & Ad-Tech Tracker Scrubber",
+        shortTitle: "HIPAA PHI Firewall (Titrate-Health)",
+        category: "Privacy",
+        seoSubtitle:
+            "Strip Protected Health Information (PHI) fields and ad-tech tracking IDs (_fbp, gbraid, ttcsid) before sending analytics events to Braze or Segment.",
+        endpoint: "/v1/privacy/hipaa-scrub",
+        enginePackage: "@dangling-dice/engine-privacy",
+    },
+    {
+        slug: "database-uri-inspector",
+        title: "MongoDB, PostgreSQL & Redis Connection URI Inspector & Encoder",
+        shortTitle: "DB URI Inspector (Studio Hub)",
+        category: "Schema",
+        seoSubtitle:
+            "Validate database connection strings, RFC-3986 percent-encode special password characters, and generate .env snippets.",
+        endpoint: "/v1/schema/inspect-uri",
+        enginePackage: "@dangling-dice/engine-schema",
+    },
+    {
+        slug: "wireguard-config-generator",
+        title: "WireGuard VPN Tunnel Config & CIDR Subnet IPAM Generator",
+        shortTitle: "WireGuard Config (Dangling Dice VPN)",
+        category: "Geo",
+        seoSubtitle:
+            "Generate deterministic WireGuard client .conf profiles, server peer blocks, and 10.66.66.x/32 subnet allocations.",
+        endpoint: "/v1/geo/wireguard-config",
+        enginePackage: "@dangling-dice/engine-geo",
+    },
+    {
+        slug: "docscanner-qr-bridge",
+        title: "Android DocScanner Deep-Link & QR Webhook Session Builder",
+        shortTitle: "DocScanner Bridge (Mobile App)",
+        category: "Geo",
+        seoSubtitle:
+            "Generate docscan:// mobile deep links and webhook upload payloads to pair your web app with the Android DocScanner app.",
+        endpoint: "/v1/geo/docscan-session",
+        enginePackage: "@dangling-dice/engine-geo",
     },
 ];
 

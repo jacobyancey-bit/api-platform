@@ -80,6 +80,40 @@ export interface CashFlowResult {
     totalNetCashFlow: number;
 }
 
+export type SoftwareProjectCategory =
+    | "WEBSITE_CREATION"
+    | "FULLSTACK"
+    | "MOBILE_APPS"
+    | "ECOMMERCE"
+    | "CUSTOM_INTEGRATION";
+
+export interface ProjectScopeRequest {
+    category: SoftwareProjectCategory;
+    hasBrandAssets: boolean;
+    hasWrittenContent: boolean;
+    hasDomainAndDns: boolean;
+    designPreference: "component_library" | "bespoke_scratch";
+    hourlyRateUsd?: number;
+}
+
+export interface ScopeRuleAdjustment {
+    rule: string;
+    applied: boolean;
+    type: "deduction" | "addition" | "neutral";
+    minHoursDelta: number;
+    maxHoursDelta: number;
+    reason: string;
+}
+
+export interface ProjectScopeResult {
+    category: SoftwareProjectCategory;
+    estimatedHourRange: [number, number];
+    hourlyRateUsd: number;
+    estimatedCostRangeUsd: [number, number];
+    initialDepositUsd: number;
+    adjustments: ScopeRuleAdjustment[];
+}
+
 function roundCents(value: number): number {
     return Math.round((value + Number.EPSILON) * 100) / 100;
 }
@@ -350,3 +384,130 @@ export function calculateCashFlowMetrics(params: CashFlowRequest): CashFlowResul
         totalNetCashFlow: roundCents(totalNetCashFlow),
     };
 }
+
+const PROJECT_CATEGORY_BASELINES: Record<SoftwareProjectCategory, [number, number]> = {
+    WEBSITE_CREATION: [30, 50],
+    FULLSTACK: [60, 100],
+    MOBILE_APPS: [70, 110],
+    ECOMMERCE: [45, 75],
+    CUSTOM_INTEGRATION: [25, 45],
+};
+
+export function calculateProjectScope(params: ProjectScopeRequest): ProjectScopeResult {
+    const hourlyRateUsd = params.hourlyRateUsd && params.hourlyRateUsd > 0 ? params.hourlyRateUsd : 80;
+    const baseline = PROJECT_CATEGORY_BASELINES[params.category];
+    if (!baseline) {
+        throw new Error(`Invalid software project category: ${params.category}`);
+    }
+
+    const [baseMin, baseMax] = baseline;
+    const adjustments: ScopeRuleAdjustment[] = [];
+    let minDelta = 0;
+    let maxDelta = 0;
+
+    if (params.hasBrandAssets) {
+        minDelta -= 5;
+        maxDelta -= 8;
+        adjustments.push({
+            rule: "hasBrandAssets",
+            applied: true,
+            type: "deduction",
+            minHoursDelta: -5,
+            maxHoursDelta: -8,
+            reason: "Client provided logos, brand guidelines, and color palettes (-5h to -8h)",
+        });
+    } else {
+        adjustments.push({
+            rule: "hasBrandAssets",
+            applied: false,
+            type: "neutral",
+            minHoursDelta: 0,
+            maxHoursDelta: 0,
+            reason: "Brand assets not provided; baseline design discovery retained",
+        });
+    }
+
+    if (params.hasWrittenContent) {
+        minDelta -= 4;
+        maxDelta -= 6;
+        adjustments.push({
+            rule: "hasWrittenContent",
+            applied: true,
+            type: "deduction",
+            minHoursDelta: -4,
+            maxHoursDelta: -6,
+            reason: "Client provided copy, media, and structured content (-4h to -6h)",
+        });
+    } else {
+        adjustments.push({
+            rule: "hasWrittenContent",
+            applied: false,
+            type: "neutral",
+            minHoursDelta: 0,
+            maxHoursDelta: 0,
+            reason: "Copywriting and content structuring included in scope",
+        });
+    }
+
+    if (params.hasDomainAndDns) {
+        minDelta -= 2;
+        maxDelta -= 3;
+        adjustments.push({
+            rule: "hasDomainAndDns",
+            applied: true,
+            type: "deduction",
+            minHoursDelta: -2,
+            maxHoursDelta: -3,
+            reason: "Client provisioned domain and DNS records (-2h to -3h)",
+        });
+    } else {
+        adjustments.push({
+            rule: "hasDomainAndDns",
+            applied: false,
+            type: "neutral",
+            minHoursDelta: 0,
+            maxHoursDelta: 0,
+            reason: "Domain registration and SSL/DNS setup handled by studio",
+        });
+    }
+
+    if (params.designPreference === "bespoke_scratch") {
+        minDelta += 10;
+        maxDelta += 16;
+        adjustments.push({
+            rule: "designPreference_bespoke",
+            applied: true,
+            type: "addition",
+            minHoursDelta: 10,
+            maxHoursDelta: 16,
+            reason: "Custom bespoke scratch UI/UX design system (+10h to +16h)",
+        });
+    } else {
+        minDelta -= 3;
+        maxDelta -= 5;
+        adjustments.push({
+            rule: "designPreference_component_library",
+            applied: true,
+            type: "deduction",
+            minHoursDelta: -3,
+            maxHoursDelta: -5,
+            reason: "Accelerated component library UI implementation (-3h to -5h)",
+        });
+    }
+
+    const finalMinHours = Math.max(10, baseMin + minDelta);
+    const finalMaxHours = Math.max(finalMinHours + 5, baseMax + maxDelta);
+    const minCostUsd = roundCents(finalMinHours * hourlyRateUsd);
+    const maxCostUsd = roundCents(finalMaxHours * hourlyRateUsd);
+    const initialDepositUsd = roundCents(minCostUsd * 0.5);
+
+    return {
+        category: params.category,
+        estimatedHourRange: [finalMinHours, finalMaxHours],
+        hourlyRateUsd,
+        estimatedCostRangeUsd: [minCostUsd, maxCostUsd],
+        initialDepositUsd,
+        adjustments,
+    };
+}
+

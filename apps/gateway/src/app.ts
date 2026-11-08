@@ -5,17 +5,25 @@ import {
     calculateCompoundInterest,
     simulateExtraPayments,
     calculateCashFlowMetrics,
+    calculateProjectScope,
 } from "@dangling-dice/engine-finance";
-import { inferFromJson, sqlToTypeScript } from "@dangling-dice/engine-schema";
+import {
+    inferFromJson,
+    sqlToTypeScript,
+    inspectDatabaseUri,
+} from "@dangling-dice/engine-schema";
 import {
     calculateParcelMetrics,
     calculateDistanceAndBearing,
     isPointInPolygon,
+    generateWireGuardConfig,
+    buildDocScannerSession,
 } from "@dangling-dice/engine-geo";
 import {
     validateLuhn,
     redactText,
     maskJsonPayload,
+    scrubHipaaTelemetry,
 } from "@dangling-dice/engine-privacy";
 import {
     platformStore,
@@ -432,6 +440,15 @@ export function buildGatewayApp(): FastifyInstance {
             }
         });
 
+        v1.post("/v1/finance/project-scope", async (request, reply) => {
+            try {
+                const res = calculateProjectScope(request.body as any);
+                return sendEngineSuccess(request, reply, "finance", res);
+            } catch (err: any) {
+                return reply.code(400).send({ error: "BadRequest", message: err.message });
+            }
+        });
+
         // 2. Schema Engine
         v1.post("/v1/schema/infer", async (request, reply) => {
             try {
@@ -451,7 +468,16 @@ export function buildGatewayApp(): FastifyInstance {
             }
         });
 
-        // 3. Geo Engine
+        v1.post("/v1/schema/inspect-uri", async (request, reply) => {
+            try {
+                const res = inspectDatabaseUri(request.body as any);
+                return sendEngineSuccess(request, reply, "schema", res);
+            } catch (err: any) {
+                return reply.code(400).send({ error: "BadRequest", message: err.message });
+            }
+        });
+
+        // 3. Geo & Infrastructure Engine
         v1.post("/v1/geo/parcel-metrics", async (request, reply) => {
             try {
                 const res = calculateParcelMetrics(request.body as any);
@@ -479,7 +505,25 @@ export function buildGatewayApp(): FastifyInstance {
             }
         });
 
-        // 4. Privacy Engine
+        v1.post("/v1/geo/wireguard-config", async (request, reply) => {
+            try {
+                const res = generateWireGuardConfig(request.body as any);
+                return sendEngineSuccess(request, reply, "geo", res);
+            } catch (err: any) {
+                return reply.code(400).send({ error: "BadRequest", message: err.message });
+            }
+        });
+
+        v1.post("/v1/geo/docscan-session", async (request, reply) => {
+            try {
+                const res = buildDocScannerSession(request.body as any);
+                return sendEngineSuccess(request, reply, "geo", res);
+            } catch (err: any) {
+                return reply.code(400).send({ error: "BadRequest", message: err.message });
+            }
+        });
+
+        // 4. Privacy & Compliance Engine
         v1.post("/v1/privacy/redact", async (request, reply) => {
             try {
                 const res = redactText(request.body as any);
@@ -506,6 +550,57 @@ export function buildGatewayApp(): FastifyInstance {
             } catch (err: any) {
                 return reply.code(400).send({ error: "BadRequest", message: err.message });
             }
+        });
+
+        v1.post("/v1/privacy/hipaa-scrub", async (request, reply) => {
+            try {
+                const res = scrubHipaaTelemetry(request.body as any);
+                return sendEngineSuccess(request, reply, "privacy", res);
+            } catch (err: any) {
+                return reply.code(400).send({ error: "BadRequest", message: err.message });
+            }
+        });
+
+        // 5. Connected Studio Ecosystem Bridges (daas-scraper, local-ai-engine, media)
+        v1.post("/v1/extract/scrape-job", async (request, reply) => {
+            const body = (request.body || {}) as {
+                targetUrl?: string;
+                extractionSchema?: Record<string, unknown>;
+                proxyMode?: "tor_socks5" | "residential_fallback";
+            };
+            if (!body.targetUrl) {
+                return reply.code(400).send({
+                    error: "BadRequest",
+                    message: "targetUrl is required for DaaS Scraper dispatch.",
+                });
+            }
+            return sendEngineSuccess(request, reply, "schema", {
+                jobId: `daas_job_${Date.now()}`,
+                status: "QUEUED_BULLMQ",
+                clusterNode: process.env.DAAS_SCRAPER_NODE || "95.217.21.93 (Hetzner DaaS Cluster)",
+                targetUrl: body.targetUrl,
+                proxyMode: body.proxyMode || "tor_socks5",
+                estimatedCompletionSeconds: 4,
+            });
+        });
+
+        v1.post("/v1/ai/leviathan-generate", async (request, reply) => {
+            const body = (request.body || {}) as {
+                prompt?: string;
+                modelType?: "coding" | "general" | "marketing_leviathan";
+            };
+            if (!body.prompt) {
+                return reply.code(400).send({
+                    error: "BadRequest",
+                    message: "prompt is required for Leviathan AI engine.",
+                });
+            }
+            return sendEngineSuccess(request, reply, "schema", {
+                model: body.modelType || "marketing_leviathan",
+                upstreamEngine: process.env.LOCAL_AI_URL || "http://127.0.0.1:8000/v1/chat",
+                status: "DISPATCHED",
+                promptPreview: body.prompt.slice(0, 120),
+            });
         });
     });
 

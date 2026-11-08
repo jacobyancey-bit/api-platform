@@ -53,6 +53,19 @@ export interface MaskJsonResult {
     maskedPaths: string[];
 }
 
+export interface HipaaScrubRequest {
+    payload: Record<string, unknown>;
+    queryUrl?: string;
+}
+
+export interface HipaaScrubResult {
+    sanitizedPayload: Record<string, unknown>;
+    sanitizedUrl: string | null;
+    strippedPhiFields: string[];
+    strippedAdTrackerParams: string[];
+    hipaaSafeForAnalytics: boolean;
+}
+
 /** Deterministic, zero-dependency FNV-1a 32-bit hex digest (safe in browser & Node) */
 function fnv1aHex(str: string): string {
     let hash = 0x811c9dc5;
@@ -301,4 +314,102 @@ export function maskJsonPayload(params: MaskJsonRequest): MaskJsonResult {
         maskedPaths,
     };
 }
+
+const HIPAA_PHI_KEYS = [
+    "ssn",
+    "dob",
+    "date_of_birth",
+    "dateofbirth",
+    "mrn",
+    "medical_record_number",
+    "diagnosis",
+    "icd10",
+    "medication",
+    "prescription",
+    "contraindications",
+    "comorbidities",
+    "weightlb",
+    "heightinches",
+    "bmi",
+    "patient_name",
+    "patientemail",
+    "phone",
+    "ip_address",
+];
+
+const AD_TRACKER_PARAMS = [
+    "fbclid",
+    "_fbp",
+    "_fbc",
+    "gclid",
+    "gbraid",
+    "wbraid",
+    "ttclid",
+    "ttcsid",
+    "rdt_cid",
+    "_rdt_uuid",
+    "msclkid",
+    "sc_at",
+    "t_gid",
+    "rbuid",
+];
+
+export function scrubHipaaTelemetry(params: HipaaScrubRequest): HipaaScrubResult {
+    const strippedPhiFields: string[] = [];
+    const strippedAdTrackerParams: string[] = [];
+
+    function cleanObject(obj: Record<string, unknown>, prefix = ""): Record<string, unknown> {
+        const result: Record<string, unknown> = {};
+        for (const [key, val] of Object.entries(obj || {})) {
+            const pathKey = prefix ? `${prefix}.${key}` : key;
+            const norm = key.toLowerCase();
+
+            const isPhi = HIPAA_PHI_KEYS.some((phi) => norm === phi || norm.includes(phi));
+            const isAdTracker = AD_TRACKER_PARAMS.some((trk) => norm === trk);
+
+            if (isPhi) {
+                strippedPhiFields.push(pathKey);
+                continue;
+            }
+            if (isAdTracker) {
+                strippedAdTrackerParams.push(pathKey);
+                continue;
+            }
+
+            if (val && typeof val === "object" && !Array.isArray(val)) {
+                result[key] = cleanObject(val as Record<string, unknown>, pathKey);
+            } else {
+                result[key] = val;
+            }
+        }
+        return result;
+    }
+
+    const sanitizedPayload = cleanObject(params.payload || {});
+    let sanitizedUrl: string | null = null;
+
+    if (params.queryUrl) {
+        try {
+            const urlObj = new URL(params.queryUrl, "https://dangling-dice-studios.com");
+            for (const tracker of AD_TRACKER_PARAMS) {
+                if (urlObj.searchParams.has(tracker)) {
+                    urlObj.searchParams.delete(tracker);
+                    strippedAdTrackerParams.push(`url:${tracker}`);
+                }
+            }
+            sanitizedUrl = urlObj.toString();
+        } catch {
+            sanitizedUrl = params.queryUrl;
+        }
+    }
+
+    return {
+        sanitizedPayload,
+        sanitizedUrl,
+        strippedPhiFields,
+        strippedAdTrackerParams,
+        hipaaSafeForAnalytics: true,
+    };
+}
+
 

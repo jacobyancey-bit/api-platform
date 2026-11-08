@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { validateLuhn, redactText, maskJsonPayload } from "./index.js";
+import { validateLuhn, redactText, maskJsonPayload, scrubHipaaTelemetry } from "./index.js";
 
 describe("validateLuhn", () => {
     it("validates a known valid Visa number and detects network", () => {
@@ -62,6 +62,26 @@ describe("maskJsonPayload", () => {
         expect(masked.username).toBe("jacobyancey");
         expect(masked.password).not.toBe("SuperSecretPassword123");
         expect(masked.auth.role).toBe("admin");
+    });
+});
+
+describe("scrubHipaaTelemetry (Titrate-Health PHI Firewall)", () => {
+    it("strips PHI fields and ad-tech tracking parameters from telemetry payloads", () => {
+        const res = scrubHipaaTelemetry({
+            payload: {
+                event: "intake_completed",
+                planTier: "PRO",
+                diagnosis: "E66.9",
+                weightLb: 215,
+                gbraid: "ad_tracker_123",
+            },
+            queryUrl: "https://dangling-dice-studios.com/intake?fbclid=abc123&step=2",
+        });
+
+        expect(res.hipaaSafeForAnalytics).toBe(true);
+        expect(res.strippedPhiFields).toEqual(["diagnosis", "weightLb"]);
+        expect(res.strippedAdTrackerParams).toContain("gbraid");
+        expect(res.sanitizedUrl).toBe("https://dangling-dice-studios.com/intake?step=2");
     });
 });
 

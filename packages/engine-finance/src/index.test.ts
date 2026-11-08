@@ -4,6 +4,7 @@ import {
     calculateCompoundInterest,
     simulateExtraPayments,
     calculateCashFlowMetrics,
+    calculateProjectScope,
 } from "./index.js";
 
 describe("calculateAmortization", () => {
@@ -110,5 +111,22 @@ describe("calculateCashFlowMetrics", () => {
         expect(result.irrPercent).toBeCloseTo(24.89, 1);
         expect(result.paybackPeriodPeriods).toBe(2.6);
         expect(result.totalNetCashFlow).toBe(8000);
+    });
+});
+
+describe("calculateProjectScope (Code_Craft Scoping Engine)", () => {
+    it("calculates deterministic hours, cost bracket, and 50% deposit", () => {
+        const res = calculateProjectScope({
+            category: "FULLSTACK",
+            hasBrandAssets: true,
+            hasWrittenContent: true,
+            hasDomainAndDns: false,
+            designPreference: "component_library",
+            hourlyRateUsd: 100,
+        });
+
+        expect(res.estimatedHourRange).toEqual([48, 81]);
+        expect(res.estimatedCostRangeUsd).toEqual([4800, 8100]);
+        expect(res.initialDepositUsd).toBe(2400);
     });
 });
