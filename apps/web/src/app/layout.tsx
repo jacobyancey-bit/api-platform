@@ -20,8 +20,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                             <span className="brand-sub">/ API & Compute Platform</span>
                         </div>
                         <nav className="nav-links">
-                            <a href="/tools/json-to-zod">All 8 Tool Sandboxes</a>
+                            <a href="/tools/json-to-zod">All 13 Tool Sandboxes</a>
                             <a href="/dashboard">API Key Dashboard</a>
+                            <a
+                                href="https://raw.githubusercontent.com/jacobyancey-bit/api-platform/main/Dangling_Dice_API_Platform.postman_collection.json"
+                                target="_blank"
+                                rel="noreferrer"
+                            >
+                                Postman JSON
+                            </a>
                             <a
                                 href="https://dangling-dice-studios.com"
                                 className="btn-outline"
