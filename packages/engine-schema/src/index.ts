@@ -394,18 +394,42 @@ export function inspectDatabaseUri(params: DatabaseUriInspectRequest): DatabaseU
         throw new Error("Database connection URI is required.");
     }
 
-    const match = raw.match(
-        /^([a-zA-Z0-9+\-]+):\/\/(?:([^:@\/]+)(?::([^@\/]*))?@)?([^:\/?#]+)(?::(\d+))?(?:\/([^?#]*))?(?:\?(.*))?$/
-    );
-
-    if (!match) {
+    const protoIdx = raw.indexOf("://");
+    if (protoIdx <= 0) {
         throw new Error(
             "Invalid database URI format. Expected protocol://user:password@host:port/database"
         );
     }
 
-    const [, protocolRaw, rawUser, rawPass, host, portStr, dbPath, queryStr] = match;
-    const protocol = protocolRaw.toLowerCase();
+    const protocol = raw.slice(0, protoIdx).toLowerCase();
+    const remainder = raw.slice(protoIdx + 3);
+
+    // Split query string first so '?' or '#' inside raw passwords before the LAST '@' don't break host parsing
+    const lastAtIdx = remainder.lastIndexOf("@");
+    const authPart = lastAtIdx !== -1 ? remainder.slice(0, lastAtIdx) : null;
+    const hostAndPath = lastAtIdx !== -1 ? remainder.slice(lastAtIdx + 1) : remainder;
+
+    let rawUser: string | undefined;
+    let rawPass: string | undefined;
+
+    if (authPart !== null) {
+        const firstColon = authPart.indexOf(":");
+        if (firstColon !== -1) {
+            rawUser = authPart.slice(0, firstColon);
+            rawPass = authPart.slice(firstColon + 1);
+        } else {
+            rawUser = authPart;
+        }
+    }
+
+    const hostMatch = hostAndPath.match(/^([^:\/?#]+)(?::(\d+))?(?:\/([^?#]*))?(?:\?(.*))?$/);
+    if (!hostMatch) {
+        throw new Error(
+            "Invalid database URI format. Expected protocol://user:password@host:port/database"
+        );
+    }
+
+    const [, host, portStr, dbPath, queryStr] = hostMatch;
     const warnings: string[] = [];
 
     let engine: DatabaseUriInspectResult["engine"] = "unknown";
