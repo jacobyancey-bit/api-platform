@@ -17,10 +17,10 @@
     "db:migrate": "prisma migrate dev"
   },
   "dependencies": {
-    "@prisma/client": "^6.4.1"
+    "@prisma/client": "^6.5.0"
   },
   "devDependencies": {
-    "prisma": "^6.4.1"
+    "prisma": "^6.5.0"
   }
 }
 

@@ -28,3 +28,4 @@ Dangling Dice Studios™ provides deterministic, zero-external-HTTP TypeScript c
 - POST /v1/finance/compound-interest
 - POST /v1/finance/extra-payments
 - POST /v1/finance/cashflow
+

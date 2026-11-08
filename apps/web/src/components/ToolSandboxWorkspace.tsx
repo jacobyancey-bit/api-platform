@@ -38,6 +38,17 @@ export function ToolSandboxWorkspace({
     const [snippetLang, setSnippetLang] = useState<"curl" | "typescript" | "python">(
         "curl"
     );
+    const [copiedTarget, setCopiedTarget] = useState<"output" | "snippet" | null>(
+        null
+    );
+    const [liveGatewayResponse, setLiveGatewayResponse] = useState<{
+        status: number;
+        latencyMs: string | null;
+        rateRemaining: string | null;
+        quotaRemaining: string | null;
+        body: string;
+    } | null>(null);
+    const [isCallingGateway, setIsCallingGateway] = useState(false);
 
     const activeMeta =
         STUDIO_TOOLS.find((t) => t.slug === activeSlug) || STUDIO_TOOLS[0];
@@ -669,34 +680,49 @@ print(res.json()["data"])`;
                             justifyContent: "space-between",
                             alignItems: "center",
                             marginBottom: "0.5rem",
+                            gap: "0.5rem",
+                            flexWrap: "wrap",
                         }}
                     >
                         <span className="field-label" style={{ marginBottom: 0 }}>
                             Deterministic Engine Output
                         </span>
-                        {activeSlug === "json-to-zod" && (
-                            <div style={{ display: "flex", gap: "0.4rem" }}>
-                                {(
-                                    ["zod", "typescript", "sqlDdl", "jsonSchema"] as const
-                                ).map((fmt) => (
-                                    <button
-                                        key={fmt}
-                                        className="btn-outline"
-                                        style={{
-                                            padding: "0.2rem 0.55rem",
-                                            fontSize: "0.75rem",
-                                            borderColor:
-                                                schemaFmt === fmt
-                                                    ? "var(--gold-primary)"
-                                                    : undefined,
-                                        }}
-                                        onClick={() => setSchemaFmt(fmt)}
-                                    >
-                                        {fmt}
-                                    </button>
-                                ))}
-                            </div>
-                        )}
+                        <div style={{ display: "flex", gap: "0.4rem", alignItems: "center" }}>
+                            {activeSlug === "json-to-zod" && (
+                                <div style={{ display: "flex", gap: "0.4rem" }}>
+                                    {(
+                                        ["zod", "typescript", "sqlDdl", "jsonSchema"] as const
+                                    ).map((fmt) => (
+                                        <button
+                                            key={fmt}
+                                            className="btn-outline"
+                                            style={{
+                                                padding: "0.2rem 0.55rem",
+                                                fontSize: "0.75rem",
+                                                borderColor:
+                                                    schemaFmt === fmt
+                                                        ? "var(--gold-primary)"
+                                                        : undefined,
+                                            }}
+                                            onClick={() => setSchemaFmt(fmt)}
+                                        >
+                                            {fmt}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                            <button
+                                className="btn-outline"
+                                style={{ padding: "0.2rem 0.65rem", fontSize: "0.75rem" }}
+                                onClick={() => {
+                                    navigator.clipboard?.writeText(evaluation.output);
+                                    setCopiedTarget("output");
+                                    setTimeout(() => setCopiedTarget(null), 1800);
+                                }}
+                            >
+                                {copiedTarget === "output" ? "✓ Copied" : "Copy Output"}
+                            </button>
+                        </div>
                     </div>
 
                     {evaluation.summary.length > 0 && (
@@ -755,7 +781,7 @@ print(res.json()["data"])`;
                             </a>
                         </span>
                     </div>
-                    <div style={{ display: "flex", gap: "0.4rem" }}>
+                    <div style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap" }}>
                         {(["curl", "typescript", "python"] as const).map((lang) => (
                             <button
                                 key={lang}
@@ -772,9 +798,103 @@ print(res.json()["data"])`;
                                 {lang.toUpperCase()}
                             </button>
                         ))}
+                        <button
+                            className="btn-outline"
+                            style={{ padding: "0.3rem 0.75rem" }}
+                            onClick={() => {
+                                navigator.clipboard?.writeText(snippet);
+                                setCopiedTarget("snippet");
+                                setTimeout(() => setCopiedTarget(null), 1800);
+                            }}
+                        >
+                            {copiedTarget === "snippet" ? "✓ Copied" : "Copy Snippet"}
+                        </button>
+                        <button
+                            className="btn-gold"
+                            style={{ padding: "0.3rem 0.85rem", fontSize: "0.8rem" }}
+                            disabled={isCallingGateway}
+                            onClick={async () => {
+                                setIsCallingGateway(true);
+                                try {
+                                    const res = await fetch(
+                                        `${GATEWAY_URL}${activeMeta.endpoint}`,
+                                        {
+                                            method: "POST",
+                                            headers: {
+                                                Authorization: `Bearer ${apiKey}`,
+                                                "Content-Type": "application/json",
+                                            },
+                                            body: JSON.stringify(evaluation.payload),
+                                        }
+                                    );
+                                    const json = await res.json();
+                                    setLiveGatewayResponse({
+                                        status: res.status,
+                                        latencyMs: res.headers.get("x-response-time-ms"),
+                                        rateRemaining: res.headers.get("x-ratelimit-remaining"),
+                                        quotaRemaining: res.headers.get("x-quota-remaining"),
+                                        body: JSON.stringify(json, null, 2),
+                                    });
+                                } catch (e: any) {
+                                    setLiveGatewayResponse({
+                                        status: 503,
+                                        latencyMs: null,
+                                        rateRemaining: null,
+                                        quotaRemaining: null,
+                                        body: JSON.stringify(
+                                            {
+                                                error: "GatewayOffline",
+                                                message:
+                                                    e.message ||
+                                                    "Start apps/gateway on :4100 to test live HTTP execution.",
+                                            },
+                                            null,
+                                            2
+                                        ),
+                                    });
+                                } finally {
+                                    setIsCallingGateway(false);
+                                }
+                            }}
+                        >
+                            {isCallingGateway
+                                ? "Calling Gateway..."
+                                : "▶ Run Live Against Gateway"}
+                        </button>
                     </div>
                 </div>
                 <pre className="code-box">{snippet}</pre>
+
+                {liveGatewayResponse && (
+                    <div style={{ marginTop: "1rem" }}>
+                        <div
+                            style={{
+                                display: "flex",
+                                justifyContent: "space-between",
+                                alignItems: "center",
+                                flexWrap: "wrap",
+                                gap: "0.5rem",
+                                marginBottom: "0.4rem",
+                                fontSize: "0.78rem",
+                                fontFamily: "var(--font-mono)",
+                            }}
+                        >
+                            <span style={{ color: "var(--neon-emerald)" }}>
+                                ● Live Gateway HTTP {liveGatewayResponse.status} Response
+                            </span>
+                            <span style={{ color: "var(--text-muted)" }}>
+                                X-Response-Time-Ms: {liveGatewayResponse.latencyMs || "N/A"}ms
+                                {" • "}
+                                X-RateLimit-Remaining:{" "}
+                                {liveGatewayResponse.rateRemaining || "N/A"}
+                                {" • "}
+                                X-Quota-Remaining:{" "}
+                                {liveGatewayResponse.quotaRemaining || "N/A"}
+                            </span>
+                        </div>
+                        <pre className="code-box">{liveGatewayResponse.body}</pre>
+                    </div>
+                )}
             </div>
         </div>
     );

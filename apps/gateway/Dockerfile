@@ -14,3 +14,4 @@ ENV GATEWAY_PORT=4100
 ENV HOST=0.0.0.0
 
 CMD ["npm", "run", "start:gateway"]
+

@@ -38,3 +38,4 @@ jobs:
 
       - name: Build Next.js Static SEO Sandboxes & Developer Portal
         run: npm run build:web
+
