@@ -253,6 +253,186 @@
           "200": { "description": "Interest saved, months shaved, and accelerated schedule" }
         }
       }
+    },
+    "/v1/finance/project-scope": {
+      "post": {
+        "operationId": "calculateSoftwareProjectScope",
+        "tags": ["Finance Engine"],
+        "summary": "Calculate software engineering hours, cost brackets, and 50% deposit (Code_Craft Engine)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["category", "hasBrandAssets", "hasWrittenContent", "hasDomainAndDns", "designPreference"],
+                "properties": {
+                  "category": { "type": "string", "enum": ["WEBSITE_CREATION", "FULLSTACK", "MOBILE_APPS", "ECOMMERCE", "CUSTOM_INTEGRATION"] },
+                  "hasBrandAssets": { "type": "boolean" },
+                  "hasWrittenContent": { "type": "boolean" },
+                  "hasDomainAndDns": { "type": "boolean" },
+                  "designPreference": { "type": "string", "enum": ["component_library", "bespoke_scratch"] },
+                  "hourlyRateUsd": { "type": "number", "default": 80 }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Deterministic hour range, cost bracket, and 50% deposit" }
+        }
+      }
+    },
+    "/v1/schema/inspect-uri": {
+      "post": {
+        "operationId": "inspectDatabaseConnectionUri",
+        "tags": ["Schema Engine"],
+        "summary": "Validate MongoDB, PostgreSQL, or Redis connection strings and RFC-3986 encode credentials",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["uri"],
+                "properties": {
+                  "uri": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Encoded safe URI, .env snippet, and diagnostic warnings" }
+        }
+      }
+    },
+    "/v1/privacy/hipaa-scrub": {
+      "post": {
+        "operationId": "scrubHipaaAnalyticsTelemetry",
+        "tags": ["Privacy Engine"],
+        "summary": "Strip HIPAA PHI fields and ad-tech tracking IDs from analytics telemetry (Titrate-Health Engine)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["payload"],
+                "properties": {
+                  "payload": { "type": "object" },
+                  "queryUrl": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Sanitized payload and list of stripped PHI & tracker fields" }
+        }
+      }
+    },
+    "/v1/geo/wireguard-config": {
+      "post": {
+        "operationId": "generateWireGuardTunnelConfig",
+        "tags": ["Geo & Network Engine"],
+        "summary": "Generate deterministic WireGuard client .conf and server peer snippets (Dangling Dice VPN)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["clientName", "serverEndpoint"],
+                "properties": {
+                  "clientName": { "type": "string" },
+                  "serverEndpoint": { "type": "string" },
+                  "peerIndex": { "type": "integer", "default": 2 }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Generated WireGuard client and server configuration blocks" }
+        }
+      }
+    },
+    "/v1/geo/docscan-session": {
+      "post": {
+        "operationId": "buildDocScannerSession",
+        "tags": ["Geo & Network Engine"],
+        "summary": "Generate Android DocScanner deep links and QR webhook upload payloads",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["sessionId", "callbackUrl"],
+                "properties": {
+                  "sessionId": { "type": "string" },
+                  "callbackUrl": { "type": "string" },
+                  "documentTitle": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Deep link URI, QR payload, and PDF geometry metadata" }
+        }
+      }
+    },
+    "/v1/extract/scrape-job": {
+      "post": {
+        "operationId": "dispatchDaasScrapeJob",
+        "tags": ["Connected Ecosystem"],
+        "summary": "Dispatch stealth browser extraction job to DaaS Scraper BullMQ cluster",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["targetUrl"],
+                "properties": {
+                  "targetUrl": { "type": "string" },
+                  "proxyMode": { "type": "string", "enum": ["tor_socks5", "residential_fallback"] }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Queued job ID and cluster node status" }
+        }
+      }
+    },
+    "/v1/ai/leviathan-generate": {
+      "post": {
+        "operationId": "dispatchLeviathanAiPrompt",
+        "tags": ["Connected Ecosystem"],
+        "summary": "Dispatch prompt to Marketing Leviathan & local LLM engine",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["prompt"],
+                "properties": {
+                  "prompt": { "type": "string" },
+                  "modelType": { "type": "string", "enum": ["coding", "general", "marketing_leviathan"] }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Dispatched model response metadata" }
+        }
+      }
     }
   }
 }

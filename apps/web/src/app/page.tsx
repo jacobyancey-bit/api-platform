@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { ToolSandboxWorkspace } from "../../components/ToolSandboxWorkspace";
+import { ToolSandboxWorkspace } from "../components/ToolSandboxWorkspace";
 
 const GATEWAY_URL =
     process.env.NEXT_PUBLIC_GATEWAY_URL || "http://localhost:4100";
