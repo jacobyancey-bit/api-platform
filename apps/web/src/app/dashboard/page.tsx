@@ -76,9 +76,19 @@ export default function DeveloperDashboardPage() {
                     <h1>API Keys, Quotas & Real-Time Telemetry</h1>
                     <p style={{ color: "var(--text-muted)" }}>{status}</p>
                 </div>
-                <a href="/" className="btn-outline">
-                    ← Back to Interactive Sandboxes
-                </a>
+                <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
+                    <a
+                        href="https://rapidapi.com/jacob-yancey-z5na1bjQ/api/dangling-dice-studios-central-api/pricing"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn-gold"
+                    >
+                        Price Details (RapidAPI) ↗
+                    </a>
+                    <a href="/" className="btn-outline">
+                        ← Back to Interactive Sandboxes
+                    </a>
+                </div>
             </div>
 
             <div className="grid-2">
@@ -107,13 +117,13 @@ export default function DeveloperDashboardPage() {
                             onChange={(e) => setTier(e.target.value as any)}
                         >
                             <option value="FREE">
-                                FREE — 1,000 calls/mo (60 req/min)
+                                BASIC / SANDBOX — Hobby &amp; Evaluation
                             </option>
                             <option value="PRO">
-                                PRO ($29/mo) — 100,000 calls/mo (300 req/min)
+                                PRO — Production Tier (See RapidAPI Price Details)
                             </option>
                             <option value="SCALE">
-                                SCALE ($99/mo) — 500,000 calls/mo (1,000 req/min)
+                                ULTRA / SCALE — High-Throughput Tier (See RapidAPI Price Details)
                             </option>
                         </select>
                         <button type="submit" className="btn-gold" style={{ width: "100%" }}>
