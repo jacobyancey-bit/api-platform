@@ -1,0 +1,40 @@
+name: Continuous Integration & Engine Verification Suite
+
+on:
+  push:
+    branches: [ main, staging ]
+  pull_request:
+    branches: [ main, staging ]
+
+jobs:
+  verify:
+    name: Build Engines, Gateway, Next.js Sandboxes & Run Vitest
+    runs-on: ubuntu-latest
+
+    env:
+      NODE_ENV: test
+      GATEWAY_PORT: 4100
+      NEXT_PUBLIC_GATEWAY_URL: https://api.dangling-dice-studios.com
+      NEXT_PUBLIC_SITE_URL: https://tools.dangling-dice-studios.com
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 22.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install Monorepo Dependencies
+        run: npm ci
+
+      - name: Build Pure Compute Engines, DB Layer & Fastify Gateway
+        run: npm run build
+
+      - name: Run Full Vitest Unit & Gateway Integration Suite (24 Tests)
+        run: npm test
+
+      - name: Build Next.js Static SEO Sandboxes & Developer Portal
+        run: npm run build:web

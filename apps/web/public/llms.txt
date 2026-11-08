@@ -1,0 +1,30 @@
+# Dangling Dice Studios™ — Stateless Compute API Platform & Developer Sandboxes
+> Official AI & LLM discovery manifest for https://dangling-dice-studios.com and https://tools.dangling-dice-studios.com
+
+## Overview
+Dangling Dice Studios™ provides deterministic, zero-external-HTTP TypeScript compute engines available both as free in-browser interactive sandboxes (Tier 1), metered self-serve REST APIs (Tier 2), and private AWS/GCP VPC enterprise deployments (Tier 3).
+
+## Free Interactive Developer Sandboxes (Tier 1)
+- JSON to Zod, TypeScript, JSON Schema & SQL Converter: https://tools.dangling-dice-studios.com/tools/json-to-zod
+- SQL CREATE TABLE to TypeScript & Zod Converter: https://tools.dangling-dice-studios.com/tools/sql-to-typescript
+- GIS Polygon Acreage, Square Footage, Perimeter & Centroid Calculator: https://tools.dangling-dice-studios.com/tools/polygon-acreage-calculator
+- Haversine Coordinate Distance, Compass Bearing & Midpoint Calculator: https://tools.dangling-dice-studios.com/tools/coordinate-distance-bearing
+- Luhn-Verified PII Redactor & Log Sanitizer: https://tools.dangling-dice-studios.com/tools/pii-redactor
+- Recursive JSON Payload Secret & Token Masker: https://tools.dangling-dice-studios.com/tools/json-secret-masker
+- Loan Amortization Schedule & Extra Payment Payoff Simulator: https://tools.dangling-dice-studios.com/tools/loan-amortization-calculator
+- Compound Interest, APY Yield & NPV/IRR Cashflow Calculator: https://tools.dangling-dice-studios.com/tools/compound-interest-calculator
+
+## Metered REST API Endpoints (Tier 2 — Authorization: Bearer dds_live_...)
+- OpenAPI 3.1 Specification: https://api.dangling-dice-studios.com/v1/openapi.json
+- POST /v1/schema/infer
+- POST /v1/schema/sql-to-ts
+- POST /v1/geo/parcel-metrics
+- POST /v1/geo/distance
+- POST /v1/geo/point-in-polygon
+- POST /v1/privacy/redact
+- POST /v1/privacy/validate-luhn
+- POST /v1/privacy/mask-json
+- POST /v1/finance/amortization
+- POST /v1/finance/compound-interest
+- POST /v1/finance/extra-payments
+- POST /v1/finance/cashflow
