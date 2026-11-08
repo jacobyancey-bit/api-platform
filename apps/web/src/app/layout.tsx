@@ -20,11 +20,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                             <span className="brand-sub">/ API & Compute Platform</span>
                         </div>
                         <nav className="nav-links">
-                            <a href="/#sandbox">Tier 1: Free Sandboxes</a>
-                            <a href="/tools/json-to-zod">SEO Tool Pages</a>
+                            <a href="/tools/json-to-zod">All 8 Tool Sandboxes</a>
                             <a href="/dashboard">API Key Dashboard</a>
-                            <a href="/#pricing">Tier 2: Pricing</a>
-                            <a href="/#enterprise">Tier 3: Custom VPC</a>
                             <a
                                 href="https://dangling-dice-studios.com"
                                 className="btn-outline"
