@@ -608,13 +608,13 @@ print(res.json()["data"])`;
                 >
                     <h2 style={{ fontSize: "1.35rem" }}>{activeMeta.title}</h2>
                     <span
+                        className="badge-pill"
                         style={{
-                            fontSize: "0.78rem",
-                            fontFamily: "var(--font-mono)",
-                            color: "var(--neon-cyan)",
+                            marginBottom: 0,
+                            fontSize: "0.75rem",
                         }}
                     >
-                        {activeMeta.enginePackage} • {activeMeta.endpoint}
+                        {activeMeta.enginePackage}
                     </span>
                 </div>
                 <p style={{ color: "var(--text-muted)", fontSize: "0.92rem" }}>
