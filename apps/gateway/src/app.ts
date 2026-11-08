@@ -30,6 +30,7 @@ import {
     PLAN_TIERS,
     DEFAULT_DEMO_RAW_KEY,
     ApiKeyRecord,
+    ApiChannelSource,
 } from "@dangling-dice/db";
 
 declare module "fastify" {
@@ -167,6 +168,25 @@ export function buildGatewayApp(): FastifyInstance {
         request.apiKeyRecord = keyRecord;
     }
 
+    function detectChannelSource(request: FastifyRequest): ApiChannelSource {
+        const ua = String(request.headers["user-agent"] || "").toLowerCase();
+        if (
+            request.headers["x-rapidapi-key"] ||
+            request.headers["x-rapidapi-host"] ||
+            request.headers["x-rapidapi-proxy-secret"] ||
+            ua.includes("rapidapi")
+        ) {
+            return "RAPIDAPI";
+        }
+        if (request.headers["postman-token"] || ua.includes("postman")) {
+            return "POSTMAN";
+        }
+        if (request.headers.origin || request.headers.referer || ua.includes("mozilla")) {
+            return "WEB_SANDBOX";
+        }
+        return "DIRECT_API";
+    }
+
     function sendEngineSuccess(
         request: FastifyRequest,
         reply: FastifyReply,
@@ -177,7 +197,9 @@ export function buildGatewayApp(): FastifyInstance {
             ? Number(process.hrtime.bigint() - request.startTimeHr)
             : 0;
         const latencyMs = Math.round((elapsedNs / 1_000_000) * 100) / 100;
+        const source = detectChannelSource(request);
         reply.header("X-Response-Time-Ms", String(latencyMs));
+        reply.header("X-Channel-Source", source);
 
         if (request.apiKeyRecord) {
             platformStore.recordUsage({
@@ -187,6 +209,7 @@ export function buildGatewayApp(): FastifyInstance {
                 endpoint: request.url,
                 statusCode: 200,
                 latencyMs,
+                source,
             });
         }
 
@@ -197,6 +220,7 @@ export function buildGatewayApp(): FastifyInstance {
             data,
             meta: {
                 tier: request.apiKeyRecord?.tier || "SANDBOX",
+                source,
                 enterprise: ENTERPRISE_CTA.customDeployment,
             },
         });
@@ -215,6 +239,7 @@ export function buildGatewayApp(): FastifyInstance {
             "@dangling-dice/engine-geo",
             "@dangling-dice/engine-privacy",
         ],
+        channelBreakdown: platformStore.getChannelBreakdown(),
         tiers: PLAN_TIERS,
         timestamp: new Date().toISOString(),
     }));
@@ -279,6 +304,7 @@ export function buildGatewayApp(): FastifyInstance {
             demoKey: DEFAULT_DEMO_RAW_KEY,
             keys: platformStore.listApiKeys(query.email),
             recentLogs: platformStore.getRecentUsageLogs(25),
+            channelBreakdown: platformStore.getChannelBreakdown(),
             tiers: PLAN_TIERS,
         };
     });

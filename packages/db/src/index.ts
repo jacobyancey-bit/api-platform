@@ -63,6 +63,8 @@ export interface ApiKeyRecord {
     lastUsedAt: string | null;
 }
 
+export type ApiChannelSource = "RAPIDAPI" | "POSTMAN" | "WEB_SANDBOX" | "DIRECT_API";
+
 export interface UsageLogRecord {
     id: string;
     apiKeyId: string;
@@ -71,6 +73,7 @@ export interface UsageLogRecord {
     endpoint: string;
     statusCode: number;
     latencyMs: number;
+    source: ApiChannelSource;
     createdAt: string;
 }
 
@@ -112,6 +115,12 @@ class PlatformStore {
     private keysById = new Map<string, ApiKeyRecord>();
     private usageLogs: UsageLogRecord[] = [];
     private inquiries: ConsultingInquiryRecord[] = [];
+    private channelCounts: Record<ApiChannelSource, number> = {
+        RAPIDAPI: 0,
+        POSTMAN: 0,
+        WEB_SANDBOX: 0,
+        DIRECT_API: 0,
+    };
 
     constructor() {
         this.seedDefaultStudioKeys();
@@ -226,12 +235,16 @@ class PlatformStore {
         endpoint: string;
         statusCode: number;
         latencyMs: number;
+        source?: ApiChannelSource;
     }): UsageLogRecord {
         const keyRecord = this.keysById.get(params.apiKeyId);
         if (keyRecord) {
             keyRecord.currentMonthUsage += 1;
             keyRecord.lastUsedAt = new Date().toISOString();
         }
+
+        const source: ApiChannelSource = params.source || "DIRECT_API";
+        this.channelCounts[source] = (this.channelCounts[source] || 0) + 1;
 
         const log: UsageLogRecord = {
             id: `log_${crypto.randomBytes(6).toString("hex")}`,
@@ -241,6 +254,7 @@ class PlatformStore {
             endpoint: params.endpoint,
             statusCode: params.statusCode,
             latencyMs: params.latencyMs,
+            source,
             createdAt: new Date().toISOString(),
         };
 
@@ -249,6 +263,10 @@ class PlatformStore {
             this.usageLogs.pop();
         }
         return log;
+    }
+
+    public getChannelBreakdown(): Record<ApiChannelSource, number> {
+        return { ...this.channelCounts };
     }
 
     public getRecentUsageLogs(limit = 50): UsageLogRecord[] {

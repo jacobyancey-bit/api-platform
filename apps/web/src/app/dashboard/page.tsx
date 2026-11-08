@@ -11,6 +11,17 @@ export default function DeveloperDashboardPage() {
     const [tier, setTier] = useState<"FREE" | "PRO" | "SCALE">("FREE");
     const [keys, setKeys] = useState<any[]>([]);
     const [recentLogs, setRecentLogs] = useState<any[]>([]);
+    const [channelBreakdown, setChannelBreakdown] = useState<{
+        RAPIDAPI: number;
+        POSTMAN: number;
+        WEB_SANDBOX: number;
+        DIRECT_API: number;
+    }>({
+        RAPIDAPI: 0,
+        POSTMAN: 0,
+        WEB_SANDBOX: 0,
+        DIRECT_API: 0,
+    });
     const [newlyMintedKey, setNewlyMintedKey] = useState<string | null>(null);
     const [status, setStatus] = useState<string>("Connected to API Platform Store");
 
@@ -20,6 +31,7 @@ export default function DeveloperDashboardPage() {
             const data = await res.json();
             if (data.keys) setKeys(data.keys);
             if (data.recentLogs) setRecentLogs(data.recentLogs);
+            if (data.channelBreakdown) setChannelBreakdown(data.channelBreakdown);
         } catch {
             setStatus(
                 "Gateway offline on :4100 — start with `npm run dev:gateway` to view live logs."
@@ -88,6 +100,34 @@ export default function DeveloperDashboardPage() {
                     <a href="/" className="btn-outline">
                         ← Back to Interactive Sandboxes
                     </a>
+                </div>
+            </div>
+
+            {/* Live Channel Attribution Counters (RapidAPI vs Postman vs Web Sandbox vs Direct) */}
+            <div className="stat-row" style={{ marginBottom: "1.75rem" }}>
+                <div className="stat-box" style={{ borderColor: "var(--neon-cyan)" }}>
+                    <div className="label">⚡ RapidAPI Hub Pulls</div>
+                    <div className="value" style={{ color: "var(--neon-cyan)" }}>
+                        {channelBreakdown.RAPIDAPI.toLocaleString()}
+                    </div>
+                </div>
+                <div className="stat-box" style={{ borderColor: "var(--gold-primary)" }}>
+                    <div className="label">🚀 Postman Network Pulls</div>
+                    <div className="value" style={{ color: "var(--gold-primary)" }}>
+                        {channelBreakdown.POSTMAN.toLocaleString()}
+                    </div>
+                </div>
+                <div className="stat-box">
+                    <div className="label">🌐 Web Sandbox Pulls</div>
+                    <div className="value">
+                        {channelBreakdown.WEB_SANDBOX.toLocaleString()}
+                    </div>
+                </div>
+                <div className="stat-box">
+                    <div className="label">💻 Direct cURL / SDK Pulls</div>
+                    <div className="value">
+                        {channelBreakdown.DIRECT_API.toLocaleString()}
+                    </div>
                 </div>
             </div>
 
