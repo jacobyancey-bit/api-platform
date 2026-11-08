@@ -50,21 +50,29 @@ export default async function DedicatedToolSeoPage({
             <section className="enterprise-banner">
                 <div>
                     <div className="badge-pill">
-                        TIER 3: CUSTOM ENTERPRISE ARCHITECTURE ($2K – $10K+)
+                        COMMERCIAL API &amp; CUSTOM VPC ARCHITECTURE
                     </div>
                     <h2 style={{ fontSize: "1.5rem", marginBottom: "0.4rem" }}>
-                        Need a custom version of this engine deployed inside your private
-                        AWS/GCP VPC?
+                        Need production API access or a private AWS/GCP VPC deployment?
                     </h2>
                     <p style={{ color: "var(--text-muted)" }}>
-                        Dangling Dice Studios™ builds bespoke quoting calculators, GIS
-                        parcel pipelines, and zero-trust PII scrubbers for engineering
-                        teams.
+                        View our commercial rate plans on RapidAPI or request a custom
+                        architecture deployment from Dangling Dice Studios™.
                     </p>
                 </div>
-                <a href="/#enterprise" className="btn-gold">
-                    Book Systems Architecture Call →
-                </a>
+                <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
+                    <a
+                        href="https://rapidapi.com/jacob-yancey-z5na1bjQ/api/dangling-dice-studios-central-api/pricing"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn-gold"
+                    >
+                        Price Details (RapidAPI) ↗
+                    </a>
+                    <a href="/#enterprise" className="btn-outline">
+                        Book Architecture Call →
+                    </a>
+                </div>
             </section>
         </main>
     );

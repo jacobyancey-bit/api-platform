@@ -21,7 +21,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                         </div>
                         <nav className="nav-links">
                             <a href="/tools/json-to-zod">All 13 Tool Sandboxes</a>
-                            <a href="/dashboard">API Key Dashboard</a>
+                            <a
+                                href="https://rapidapi.com/jacob-yancey-z5na1bjQ/api/dangling-dice-studios-central-api/pricing"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                Price Details ↗
+                            </a>
                             <a
                                 href="https://raw.githubusercontent.com/jacobyancey-bit/api-platform/main/Dangling_Dice_API_Platform.postman_collection.json"
                                 target="_blank"

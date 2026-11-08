@@ -91,124 +91,80 @@ export default function PlatformLandingPage() {
                 </h1>
                 <p>
                     Zero-dependency TypeScript engines for Schema Conversion, Geospatial Parcel
-                    Math, Luhn-Verified PII Redaction, and Financial Amortization. Test all 8
+                    Math, Luhn-Verified PII Redaction, and Financial Amortization. Test all 13
                     utilities instantly below in our client-side sandbox or click{" "}
                     <strong>▶ Run Live Against Gateway</strong> to verify real HTTP execution.
                 </p>
+                <div style={{ marginTop: "1.25rem", display: "flex", gap: "0.75rem", justifyContent: "center", flexWrap: "wrap" }}>
+                    <a
+                        href="https://rapidapi.com/jacob-yancey-z5na1bjQ/api/dangling-dice-studios-central-api/pricing"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn-gold"
+                    >
+                        View Price Details on RapidAPI ↗
+                    </a>
+                </div>
             </section>
 
-            {/* Tier 1: All 8 Interactive Tools + Copy Buttons + Live Gateway Runner */}
+            {/* Tier 1: All 13 Interactive Tools + Copy Buttons + Live Gateway Runner */}
             <section id="sandbox">
                 <ToolSandboxWorkspace initialSlug="json-to-zod" apiKey={generatedKey} />
             </section>
 
-            {/* Tier 2: Metered Self-Serve Developer API & Instant Key Minting */}
+            {/* API Access & RapidAPI Price Details CTA (No Pricing Shown on Main Page) */}
             <section id="pricing" style={{ marginTop: "3.5rem" }}>
-                <div style={{ textAlign: "center", marginBottom: "2rem" }}>
-                    <div className="badge-pill">TIER 2: SELF-SERVE METERED API</div>
-                    <h2>Predictable Developer Pricing & Instant API Keys</h2>
-                    <p style={{ color: "var(--text-muted)" }}>
-                        Start free with 1,000 requests/month. Scale to hundreds of thousands of
-                        calls with token-bucket rate limiting.
-                    </p>
-                </div>
-
-                <div className="grid-3">
-                    <div className="card">
-                        <div className="field-label">FREE SANDBOX & HOBBY</div>
-                        <h3 style={{ fontSize: "2rem", margin: "0.4rem 0" }}>
-                            $0{" "}
-                            <span style={{ fontSize: "0.9rem", color: "var(--text-muted)" }}>
-                                / month
-                            </span>
-                        </h3>
-                        <p style={{ color: "var(--text-muted)", marginBottom: "1rem" }}>
-                            1,000 calls/month • 60 requests/min. Instant API key below.
-                        </p>
-                        <form onSubmit={handleGenerateKey}>
-                            <input
-                                className="input"
-                                placeholder="you@company.com"
-                                value={devEmail}
-                                onChange={(e) => setDevEmail(e.target.value)}
-                                required
-                            />
-                            <input
-                                className="input"
-                                placeholder="Project Name"
-                                value={keyName}
-                                onChange={(e) => setKeyName(e.target.value)}
-                            />
-                            <button type="submit" className="btn-gold" style={{ width: "100%" }}>
-                                Mint Free API Key →
-                            </button>
-                        </form>
-                        <p
-                            style={{
-                                marginTop: "0.75rem",
-                                fontSize: "0.78rem",
-                                fontFamily: "var(--font-mono)",
-                                color: "var(--neon-cyan)",
-                            }}
-                        >
-                            {keyStatusMsg}
+                <div
+                    className="card"
+                    style={{
+                        borderColor: "var(--gold-primary)",
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        flexWrap: "wrap",
+                        gap: "1.5rem",
+                        padding: "2rem",
+                    }}
+                >
+                    <div style={{ flex: "1 1 420px" }}>
+                        <div className="badge-pill">PRODUCTION REST API &amp; PLANS</div>
+                        <h2 style={{ margin: "0.5rem 0" }}>
+                            Ready to Integrate These 21 Endpoints into Production?
+                        </h2>
+                        <p style={{ color: "var(--text-muted)", marginBottom: 0 }}>
+                            All commercial API subscriptions, rate quotas, and plan tiers are managed
+                            through our official RapidAPI Hub listing. Click below to view full price
+                            details and subscribe.
                         </p>
                     </div>
-
-                    <div className="card" style={{ borderColor: "var(--gold-primary)" }}>
-                        <div
-                            className="field-label"
-                            style={{ color: "var(--gold-primary)" }}
-                        >
-                            MOST POPULAR — PRO API
-                        </div>
-                        <h3 style={{ fontSize: "2rem", margin: "0.4rem 0" }}>
-                            $29{" "}
-                            <span style={{ fontSize: "0.9rem", color: "var(--text-muted)" }}>
-                                / month
-                            </span>
-                        </h3>
-                        <p style={{ color: "var(--text-muted)", marginBottom: "1.25rem" }}>
-                            100,000 calls/month • 300 requests/min • All 4 Compute Engines •
-                            Stripe Metered Billing.
-                        </p>
+                    <div style={{ display: "flex", gap: "0.85rem", flexWrap: "wrap" }}>
                         <a
-                            href="/dashboard"
+                            href="https://rapidapi.com/jacob-yancey-z5na1bjQ/api/dangling-dice-studios-central-api/pricing"
+                            target="_blank"
+                            rel="noopener noreferrer"
                             className="btn-gold"
-                            style={{ width: "100%" }}
+                            style={{ padding: "0.85rem 1.6rem", fontSize: "0.95rem" }}
                         >
-                            Upgrade to Pro ($29/mo)
+                            Price Details (RapidAPI) ↗
                         </a>
-                    </div>
-
-                    <div className="card">
-                        <div className="field-label">SCALE & HIGH THROUGHPUT</div>
-                        <h3 style={{ fontSize: "2rem", margin: "0.4rem 0" }}>
-                            $99{" "}
-                            <span style={{ fontSize: "0.9rem", color: "var(--text-muted)" }}>
-                                / month
-                            </span>
-                        </h3>
-                        <p style={{ color: "var(--text-muted)", marginBottom: "1.25rem" }}>
-                            500,000 calls/month • 1,000 requests/min • Priority engineering
-                            support from Dangling Dice Studios™.
-                        </p>
                         <a
-                            href="/dashboard"
+                            href="https://rapidapi.com/jacob-yancey-z5na1bjQ/api/dangling-dice-studios-central-api"
+                            target="_blank"
+                            rel="noopener noreferrer"
                             className="btn-outline"
-                            style={{ width: "100%" }}
+                            style={{ padding: "0.85rem 1.4rem", fontSize: "0.95rem" }}
                         >
-                            Select Scale ($99/mo)
+                            Explore Endpoints on RapidAPI ↗
                         </a>
                     </div>
                 </div>
             </section>
 
-            {/* Tier 3: Inbound Custom Architecture & Enterprise VPC Contracts ($2k - $10k+) */}
+            {/* Inbound Custom Architecture & Enterprise VPC Contracts */}
             <section id="enterprise" className="enterprise-banner">
                 <div style={{ flex: "1 1 420px" }}>
                     <div className="badge-pill">
-                        TIER 3: CUSTOM ARCHITECTURE & PRIVATE VPC ($2K – $10K+)
+                        CUSTOM ARCHITECTURE &amp; PRIVATE VPC DEPLOYMENT
                     </div>
                     <h2 style={{ fontSize: "1.75rem", marginBottom: "0.6rem" }}>
                         Need this embedded into your private AWS/GCP VPC or custom B2B stack?
@@ -218,6 +174,15 @@ export default function PlatformLandingPage() {
                         Dangling Dice Studios™ architects and deploys dedicated quoting engines,
                         GIS pipelines, and PII sanitization clusters directly inside your cloud.
                     </p>
+                    <a
+                        href="https://rapidapi.com/jacob-yancey-z5na1bjQ/api/dangling-dice-studios-central-api/pricing"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn-outline"
+                        style={{ display: "inline-block" }}
+                    >
+                        View API Price Details on RapidAPI ↗
+                    </a>
                 </div>
 
                 <form
