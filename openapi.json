@@ -1,41 +1,139 @@
 {
-  "openapi": "3.1.0",
+  "openapi": "3.0.3",
   "info": {
-    "title": "Dangling Dice Studios™ — Stateless Compute API Platform",
-    "version": "1.0.0",
-    "description": "Ultra-low-latency (<15ms) stateless REST APIs for JSON/Zod/SQL Schema Inference, GIS Parcel Acreage & Coordinate Math, Luhn-Verified PII Redaction, and Financial Loan Amortization.",
+    "title": "Dangling Dice Studios™ Central & Stateless Compute API",
+    "version": "1.2.0",
+    "description": "Official unified developer API for Dangling Dice Studios™. Includes Media Converter, Discovery & SEO, Catalog & Releases, plus 15+ ultra-low-latency (<15ms) Stateless Compute APIs for FinTech Amortization, Software Project Scoping, JSON/Zod/SQL Schema Inference, GIS Parcel & WireGuard Config Generation, and HIPAA/PCI-DSS PII Scrubbing.",
     "contact": {
-      "name": "Dangling Dice Studios™ Systems Architecture",
-      "url": "https://dangling-dice-studios.com",
+      "name": "Dangling Dice Studios™ Engineering",
+      "url": "https://dangling-dice-studios.com/",
       "email": "jacob.yancey@danglingdicestudios.com"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
     }
   },
   "servers": [
     {
-      "url": "https://api.dangling-dice-studios.com",
-      "description": "Dangling Dice Studios Production Gateway"
+      "url": "https://dangling-dice-studios.com",
+      "description": "Production Central & Stateless Compute API Gateway"
     },
     {
       "url": "http://localhost:4100",
-      "description": "Local Development Gateway"
+      "description": "Local Stateless Compute Gateway"
     }
   ],
-  "components": {
-    "securitySchemes": {
-      "BearerAuth": {
-        "type": "http",
-        "scheme": "bearer",
-        "bearerFormat": "API_KEY",
-        "description": "Pass your Dangling Dice API Key in Authorization: Bearer dds_live_..."
-      }
-    }
-  },
-  "security": [
-    {
-      "BearerAuth": []
-    }
+  "tags": [
+    { "name": "Media Converter", "description": "YouTube to MP3 (320kbps) & MP4 media stream extraction" },
+    { "name": "Discovery & SEO", "description": "oEmbed 1.0 rich preview generation & crawler endpoints" },
+    { "name": "Catalog & Releases", "description": "Dangling Beats instrumentals, coding tutorials, and apps" },
+    { "name": "Schema Engine", "description": "JSON to Zod/TypeScript/SQL DDL inference, SQL-to-TS compiler, and Database URI validator" },
+    { "name": "Finance Engine", "description": "Penny-accurate loan amortization, extra payment simulator, cash flow metrics, and software project scoping" },
+    { "name": "Geo & Network Engine", "description": "GIS polygon acreage/perimeter, Haversine distance/bearing, WireGuard tunnel generator, and DocScanner sessions" },
+    { "name": "Privacy Engine", "description": "Luhn credit card & PII text redaction, recursive JSON secret masking, and HIPAA PHI telemetry firewall" },
+    { "name": "Connected Ecosystem", "description": "DaaS stealth web scraper job dispatcher and Marketing Leviathan local AI generator" },
+    { "name": "System & Telemetry", "description": "Real-time health diagnostics, database state, and request counters" }
   ],
   "paths": {
+    "/media/convert": {
+      "post": {
+        "operationId": "convertMediaStream",
+        "tags": ["Media Converter"],
+        "summary": "Extract Audio/Video Stream from URL",
+        "description": "Validates a public YouTube or audio URL and returns resolved high-speed download streams for MP3 (192kbps/320kbps) or MP4.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["url"],
+                "properties": {
+                  "url": { "type": "string", "example": "https://www.youtube.com/watch?v=Db7ZrUtuCxU" },
+                  "format": { "type": "string", "enum": ["mp3-320", "mp3-192", "mp4"], "default": "mp3-320" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Stream metadata and direct download link resolved" },
+          "400": { "description": "Invalid URL or SSRF attempt blocked" }
+        }
+      }
+    },
+    "/oembed": {
+      "get": {
+        "operationId": "getOembedRichPreview",
+        "tags": ["Discovery & SEO"],
+        "summary": "oEmbed 1.0 Rich Preview Provider",
+        "description": "Returns compliant oEmbed 1.0 JSON representation used by Discord, Twitter/X, Reddit, and Slack for rich embeds.",
+        "parameters": [
+          {
+            "name": "url",
+            "in": "query",
+            "required": true,
+            "description": "The target URL to generate rich embed metadata for.",
+            "schema": { "type": "string", "example": "https://dangling-dice-studios.com/" }
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "required": false,
+            "description": "The requested serialization format (defaults to json).",
+            "schema": { "type": "string", "enum": ["json"], "default": "json" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Standard oEmbed 1.0 JSON payload" }
+        }
+      }
+    },
+    "/affiliates": {
+      "get": {
+        "operationId": "listPartnerDeals",
+        "tags": ["Discovery & SEO"],
+        "summary": "Verified Cloud Credits & Partner Deals",
+        "description": "Returns verified developer cloud credits (DigitalOcean $200, MongoDB Atlas) and music production perks.",
+        "responses": {
+          "200": { "description": "Directory of verified developer partner deals" }
+        }
+      }
+    },
+    "/items": {
+      "get": {
+        "operationId": "listCatalogItems",
+        "tags": ["Catalog & Releases"],
+        "summary": "List Studio Resources & Beats",
+        "description": "Fetches verified studio releases, including Dangling Beats music instrumentals, coding courses, and phone apps.",
+        "parameters": [
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["All", "Coding Tutorials", "Beats & Audio", "Mobile Apps", "Developer Tools"]
+            }
+          }
+        ],
+        "responses": {
+          "200": { "description": "List of catalog items" }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "operationId": "getSystemHealth",
+        "tags": ["System & Telemetry"],
+        "summary": "System Health & Live Analytics",
+        "description": "Returns operational status, database connectivity, server uptime, and active compute engine modules.",
+        "responses": {
+          "200": { "description": "Service is healthy and operational" }
+        }
+      }
+    },
     "/v1/schema/infer": {
       "post": {
         "operationId": "inferSchemaFromJson",
@@ -49,7 +147,11 @@
                 "type": "object",
                 "required": ["jsonInput"],
                 "properties": {
-                  "jsonInput": { "description": "Raw JSON string or JSON object" },
+                  "jsonInput": {
+                    "type": "string",
+                    "description": "Raw JSON string or serialized JSON object",
+                    "example": "{\"userId\": 1024, \"email\": \"founder@dangling-dice-studios.com\", \"active\": true}"
+                  },
                   "rootName": { "type": "string", "default": "RootRecord" }
                 }
               }
@@ -74,7 +176,10 @@
                 "type": "object",
                 "required": ["sqlDdl"],
                 "properties": {
-                  "sqlDdl": { "type": "string" }
+                  "sqlDdl": {
+                    "type": "string",
+                    "example": "CREATE TABLE users (id UUID PRIMARY KEY, email VARCHAR(255) NOT NULL, created_at TIMESTAMPTZ);"
+                  }
                 }
               }
             }
@@ -85,27 +190,22 @@
         }
       }
     },
-    "/v1/geo/parcel-metrics": {
+    "/v1/schema/inspect-uri": {
       "post": {
-        "operationId": "calculateParcelMetrics",
-        "tags": ["Geo Engine"],
-        "summary": "Calculate polygon acreage, square feet, hectares, perimeter, and centroid",
+        "operationId": "inspectDatabaseConnectionUri",
+        "tags": ["Schema Engine"],
+        "summary": "Validate MongoDB, PostgreSQL, or Redis connection strings and RFC-3986 encode credentials",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["coordinates"],
+                "required": ["uri"],
                 "properties": {
-                  "coordinates": {
-                    "type": "array",
-                    "items": {
-                      "type": "array",
-                      "items": { "type": "number" },
-                      "minItems": 2,
-                      "maxItems": 2
-                    }
+                  "uri": {
+                    "type": "string",
+                    "example": "mongodb+srv://admin:p@ss:word#1@cluster0.example.mongodb.net/prod_db"
                   }
                 }
               }
@@ -113,90 +213,7 @@
           }
         },
         "responses": {
-          "200": { "description": "Computed parcel area and boundary metrics" }
-        }
-      }
-    },
-    "/v1/geo/distance": {
-      "post": {
-        "operationId": "calculateDistanceAndBearing",
-        "tags": ["Geo Engine"],
-        "summary": "Compute Haversine distance, compass bearing, and midpoint between two coordinates",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": ["from", "to"],
-                "properties": {
-                  "from": {
-                    "type": "object",
-                    "required": ["lat", "lng"],
-                    "properties": { "lat": { "type": "number" }, "lng": { "type": "number" } }
-                  },
-                  "to": {
-                    "type": "object",
-                    "required": ["lat", "lng"],
-                    "properties": { "lat": { "type": "number" }, "lng": { "type": "number" } }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": { "description": "Distance in meters, km, miles, feet + bearing and midpoint" }
-        }
-      }
-    },
-    "/v1/privacy/redact": {
-      "post": {
-        "operationId": "redactPiiText",
-        "tags": ["Privacy Engine"],
-        "summary": "Sanitize PII (Emails, SSNs, Luhn-checked Credit Cards, Phones, IPs, API Keys)",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": ["text"],
-                "properties": {
-                  "text": { "type": "string" },
-                  "mode": { "type": "string", "enum": ["placeholder", "mask", "hash"], "default": "placeholder" }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": { "description": "Sanitized text and category breakdown" }
-        }
-      }
-    },
-    "/v1/privacy/mask-json": {
-      "post": {
-        "operationId": "maskSensitiveJsonPayload",
-        "tags": ["Privacy Engine"],
-        "summary": "Recursively mask passwords, tokens, SSNs, and secrets in nested JSON objects",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": ["payload"],
-                "properties": {
-                  "payload": { "type": "object" },
-                  "sensitiveKeys": { "type": "array", "items": { "type": "string" } }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": { "description": "Masked JSON object and list of redacted key paths" }
+          "200": { "description": "Encoded safe URI, .env snippet, and diagnostic warnings" }
         }
       }
     },
@@ -213,9 +230,9 @@
                 "type": "object",
                 "required": ["principal", "annualRatePercent", "termMonths"],
                 "properties": {
-                  "principal": { "type": "number" },
-                  "annualRatePercent": { "type": "number" },
-                  "termMonths": { "type": "integer" }
+                  "principal": { "type": "number", "example": 350000 },
+                  "annualRatePercent": { "type": "number", "example": 6.5 },
+                  "termMonths": { "type": "integer", "example": 360 }
                 }
               }
             }
@@ -239,11 +256,11 @@
                 "type": "object",
                 "required": ["principal", "annualRatePercent", "termMonths"],
                 "properties": {
-                  "principal": { "type": "number" },
-                  "annualRatePercent": { "type": "number" },
-                  "termMonths": { "type": "integer" },
-                  "extraMonthlyPayment": { "type": "number", "default": 0 },
-                  "oneTimeExtraPayment": { "type": "number", "default": 0 }
+                  "principal": { "type": "number", "example": 350000 },
+                  "annualRatePercent": { "type": "number", "example": 6.5 },
+                  "termMonths": { "type": "integer", "example": 360 },
+                  "extraMonthlyPayment": { "type": "number", "default": 300 },
+                  "oneTimeExtraPayment": { "type": "number", "default": 5000 }
                 }
               }
             }
@@ -251,6 +268,36 @@
         },
         "responses": {
           "200": { "description": "Interest saved, months shaved, and accelerated schedule" }
+        }
+      }
+    },
+    "/v1/finance/cash-flow": {
+      "post": {
+        "operationId": "calculateCashFlowMetrics",
+        "tags": ["Finance Engine"],
+        "summary": "Compute Net Present Value (NPV), Internal Rate of Return (IRR), ROI, and Payback Period",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["discountRatePercent", "initialInvestment", "cashFlows"],
+                "properties": {
+                  "discountRatePercent": { "type": "number", "example": 8.0 },
+                  "initialInvestment": { "type": "number", "example": 100000 },
+                  "cashFlows": {
+                    "type": "array",
+                    "items": { "type": "number" },
+                    "example": [28000, 34000, 42000, 48000]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "NPV, IRR percentage, payback period, and ROI" }
         }
       }
     },
@@ -267,11 +314,19 @@
                 "type": "object",
                 "required": ["category", "hasBrandAssets", "hasWrittenContent", "hasDomainAndDns", "designPreference"],
                 "properties": {
-                  "category": { "type": "string", "enum": ["WEBSITE_CREATION", "FULLSTACK", "MOBILE_APPS", "ECOMMERCE", "CUSTOM_INTEGRATION"] },
-                  "hasBrandAssets": { "type": "boolean" },
-                  "hasWrittenContent": { "type": "boolean" },
-                  "hasDomainAndDns": { "type": "boolean" },
-                  "designPreference": { "type": "string", "enum": ["component_library", "bespoke_scratch"] },
+                  "category": {
+                    "type": "string",
+                    "enum": ["WEBSITE_CREATION", "FULLSTACK", "MOBILE_APPS", "ECOMMERCE", "CUSTOM_INTEGRATION"],
+                    "example": "FULLSTACK"
+                  },
+                  "hasBrandAssets": { "type": "boolean", "example": true },
+                  "hasWrittenContent": { "type": "boolean", "example": false },
+                  "hasDomainAndDns": { "type": "boolean", "example": true },
+                  "designPreference": {
+                    "type": "string",
+                    "enum": ["component_library", "bespoke_scratch"],
+                    "example": "bespoke_scratch"
+                  },
                   "hourlyRateUsd": { "type": "number", "default": 80 }
                 }
               }
@@ -283,52 +338,78 @@
         }
       }
     },
-    "/v1/schema/inspect-uri": {
+    "/v1/geo/parcel-metrics": {
       "post": {
-        "operationId": "inspectDatabaseConnectionUri",
-        "tags": ["Schema Engine"],
-        "summary": "Validate MongoDB, PostgreSQL, or Redis connection strings and RFC-3986 encode credentials",
+        "operationId": "calculateParcelMetrics",
+        "tags": ["Geo & Network Engine"],
+        "summary": "Calculate polygon acreage, square feet, hectares, perimeter, and centroid",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["uri"],
+                "required": ["coordinates"],
                 "properties": {
-                  "uri": { "type": "string" }
+                  "coordinates": {
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "items": { "type": "number" }
+                    },
+                    "example": [
+                      [-97.7431, 30.2672],
+                      [-97.7421, 30.2672],
+                      [-97.7421, 30.2682],
+                      [-97.7431, 30.2682]
+                    ]
+                  }
                 }
               }
             }
           }
         },
         "responses": {
-          "200": { "description": "Encoded safe URI, .env snippet, and diagnostic warnings" }
+          "200": { "description": "Computed parcel area and boundary metrics" }
         }
       }
     },
-    "/v1/privacy/hipaa-scrub": {
+    "/v1/geo/distance": {
       "post": {
-        "operationId": "scrubHipaaAnalyticsTelemetry",
-        "tags": ["Privacy Engine"],
-        "summary": "Strip HIPAA PHI fields and ad-tech tracking IDs from analytics telemetry (Titrate-Health Engine)",
+        "operationId": "calculateDistanceAndBearing",
+        "tags": ["Geo & Network Engine"],
+        "summary": "Compute Haversine distance, compass bearing, and midpoint between two coordinates",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["payload"],
+                "required": ["from", "to"],
                 "properties": {
-                  "payload": { "type": "object" },
-                  "queryUrl": { "type": "string" }
+                  "from": {
+                    "type": "object",
+                    "required": ["lat", "lng"],
+                    "properties": {
+                      "lat": { "type": "number", "example": 30.2672 },
+                      "lng": { "type": "number", "example": -97.7431 }
+                    }
+                  },
+                  "to": {
+                    "type": "object",
+                    "required": ["lat", "lng"],
+                    "properties": {
+                      "lat": { "type": "number", "example": 32.7767 },
+                      "lng": { "type": "number", "example": -96.797 }
+                    }
+                  }
                 }
               }
             }
           }
         },
         "responses": {
-          "200": { "description": "Sanitized payload and list of stripped PHI & tracker fields" }
+          "200": { "description": "Distance in meters, km, miles, feet + bearing and midpoint" }
         }
       }
     },
@@ -345,8 +426,8 @@
                 "type": "object",
                 "required": ["clientName", "serverEndpoint"],
                 "properties": {
-                  "clientName": { "type": "string" },
-                  "serverEndpoint": { "type": "string" },
+                  "clientName": { "type": "string", "example": "workstation-alpha" },
+                  "serverEndpoint": { "type": "string", "example": "vpn.dangling-dice-studios.com:51820" },
                   "peerIndex": { "type": "integer", "default": 2 }
                 }
               }
@@ -371,9 +452,9 @@
                 "type": "object",
                 "required": ["sessionId", "callbackUrl"],
                 "properties": {
-                  "sessionId": { "type": "string" },
-                  "callbackUrl": { "type": "string" },
-                  "documentTitle": { "type": "string" }
+                  "sessionId": { "type": "string", "example": "scan_99481a" },
+                  "callbackUrl": { "type": "string", "example": "https://dangling-dice-studios.com/webhooks/docscan" },
+                  "documentTitle": { "type": "string", "example": "Signed_MSA_Contract.pdf" }
                 }
               }
             }
@@ -381,6 +462,93 @@
         },
         "responses": {
           "200": { "description": "Deep link URI, QR payload, and PDF geometry metadata" }
+        }
+      }
+    },
+    "/v1/privacy/redact": {
+      "post": {
+        "operationId": "redactPiiText",
+        "tags": ["Privacy Engine"],
+        "summary": "Sanitize PII (Emails, SSNs, Luhn-checked Credit Cards, Phones, IPs, API Keys)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["text"],
+                "properties": {
+                  "text": {
+                    "type": "string",
+                    "example": "Customer jane@acme.io paid with card 4532015112830366 and SSN 123-45-6789."
+                  },
+                  "mode": { "type": "string", "enum": ["placeholder", "mask", "hash"], "default": "placeholder" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Sanitized text and category breakdown" }
+        }
+      }
+    },
+    "/v1/privacy/mask-json": {
+      "post": {
+        "operationId": "maskSensitiveJsonPayload",
+        "tags": ["Privacy Engine"],
+        "summary": "Recursively mask passwords, tokens, SSNs, and secrets in nested JSON objects",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["payload"],
+                "properties": {
+                  "payload": {
+                    "type": "object",
+                    "example": { "user": "jacob", "password": "super_secret_password", "stripeToken": "sk_live_999" }
+                  },
+                  "sensitiveKeys": { "type": "array", "items": { "type": "string" } }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Masked JSON object and list of redacted key paths" }
+        }
+      }
+    },
+    "/v1/privacy/hipaa-scrub": {
+      "post": {
+        "operationId": "scrubHipaaAnalyticsTelemetry",
+        "tags": ["Privacy Engine"],
+        "summary": "Strip HIPAA PHI fields and ad-tech tracking IDs from analytics telemetry (Titrate-Health Engine)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["payload"],
+                "properties": {
+                  "payload": {
+                    "type": "object",
+                    "example": { "event": "dosage_logged", "patientName": "John Doe", "dosageMg": 25, "fbclid": "IwAR123" }
+                  },
+                  "queryUrl": {
+                    "type": "string",
+                    "example": "https://app.titrate.health/log?utm_source=meta&fbclid=IwAR999&gclid=Cj0KCQ"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Sanitized payload and list of stripped PHI & tracker fields" }
         }
       }
     },
@@ -397,7 +565,7 @@
                 "type": "object",
                 "required": ["targetUrl"],
                 "properties": {
-                  "targetUrl": { "type": "string" },
+                  "targetUrl": { "type": "string", "example": "https://example.com/pricing" },
                   "proxyMode": { "type": "string", "enum": ["tor_socks5", "residential_fallback"] }
                 }
               }
@@ -422,7 +590,7 @@
                 "type": "object",
                 "required": ["prompt"],
                 "properties": {
-                  "prompt": { "type": "string" },
+                  "prompt": { "type": "string", "example": "Generate a launch campaign for our new JSON-to-Zod API." },
                   "modelType": { "type": "string", "enum": ["coding", "general", "marketing_leviathan"] }
                 }
               }
@@ -436,4 +604,3 @@
     }
   }
 }
-
