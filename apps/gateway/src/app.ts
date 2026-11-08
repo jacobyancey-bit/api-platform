@@ -58,7 +58,14 @@ export function buildGatewayApp(): FastifyInstance {
     app.register(cors, {
         origin: true,
         methods: ["GET", "POST", "DELETE", "OPTIONS"],
-        allowedHeaders: ["Content-Type", "Authorization", "x-api-key"],
+        allowedHeaders: [
+            "Content-Type",
+            "Authorization",
+            "x-api-key",
+            "x-rapidapi-key",
+            "x-rapidapi-host",
+            "x-rapidapi-proxy-secret",
+        ],
     });
 
     app.addHook("onRequest", async (request, reply) => {
@@ -78,6 +85,11 @@ export function buildGatewayApp(): FastifyInstance {
         const xApiKey = request.headers["x-api-key"];
         if (typeof xApiKey === "string" && xApiKey.trim()) {
             return xApiKey.trim();
+        }
+        // Native RapidAPI Runtime proxy compatibility (zero manual header config required)
+        const rapidKey = request.headers["x-rapidapi-key"] || request.headers["x-rapidapi-proxy-secret"];
+        if (typeof rapidKey === "string" && rapidKey.trim()) {
+            return process.env.RAPIDAPI_MASTER_KEY || DEFAULT_DEMO_RAW_KEY;
         }
         return null;
     }
